@@ -3,22 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trình Đặt Tên Ngẫu Nhiên Chuyên Nghiệp</title>
+  <title>Trình Đặt Tên Ngẫu Nhiên Chuyên Nghiệp Pro</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- PDF.js library for parsing PDF files -->
+  <!-- PDF.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f8fafc;
       color: #0f172a;
+    }
+    .font-mono-code {
+      font-family: 'Roboto Mono', monospace;
     }
     /* Custom Scrollbar */
     ::-webkit-scrollbar {
@@ -54,15 +57,15 @@
   </div>
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center text-white shadow-md shadow-red-200">
+        <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-md shadow-red-200">
           <i data-lucide="sparkles" class="w-6 h-6"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-slate-900 leading-tight">NameGenerator Pro</h1>
-          <p class="text-xs text-slate-500">Hệ thống tạo tên ngẫu nhiên chuẩn hóa</p>
+          <h1 class="font-bold text-lg text-slate-900 leading-tight">NameGenerator Pro v2</h1>
+          <p class="text-xs text-slate-500">Đặt tên ngẫu nhiên chuẩn hóa & Xuất tệp cao cấp</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -86,7 +89,7 @@
           <div class="flex items-center justify-between mb-4">
             <h2 class="font-semibold text-slate-900 flex items-center gap-2 text-base">
               <i data-lucide="file-up" class="w-5 h-5 text-red-500"></i>
-              Nguồn dữ liệu từ Tệp
+              Nguồn dữ liệu Tệp
             </h2>
             <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono">.TXT, .PDF</span>
           </div>
@@ -97,19 +100,19 @@
               <div class="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-slate-500 group-hover:scale-110 group-hover:text-red-500 transition-all mb-3">
                 <i data-lucide="upload-cloud" class="w-6 h-6"></i>
               </div>
-              <p class="text-sm font-medium text-slate-700 text-center">Tải lên tệp danh sách từ ngữ</p>
-              <p class="text-xs text-slate-400 text-center mt-1">Kéo thả tệp hoặc nhấp để chọn tệp</p>
+              <p class="text-sm font-medium text-slate-700 text-center">Tải tệp từ vựng (.TXT, .PDF)</p>
+              <p class="text-xs text-slate-400 text-center mt-1">Kéo thả hoặc nhấp để chọn tệp</p>
             </label>
 
-            <!-- File Processing Preview -->
+            <!-- File Processing Summary -->
             <div id="file-summary" class="hidden bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs space-y-2">
               <div class="flex items-center justify-between text-slate-700 font-medium pb-2 border-b border-slate-200">
-                <span id="file-name" class="truncate max-w-[200px] font-semibold text-red-600">file.txt</span>
+                <span id="file-name" class="truncate max-w-[180px] font-semibold text-red-600">file.txt</span>
                 <span id="file-size" class="text-slate-400">0 KB</span>
               </div>
               <div class="grid grid-cols-2 gap-2 text-slate-600 pt-1">
                 <div>Từ hợp lệ: <strong id="stat-words" class="text-slate-900">0</strong></div>
-                <div>Từ trùng loại bỏ: <strong id="stat-duplicates" class="text-amber-600">0</strong></div>
+                <div>Từ trùng đã lọc: <strong id="stat-duplicates" class="text-amber-600">0</strong></div>
               </div>
               <div class="pt-2">
                 <button id="btn-view-words" class="text-xs text-red-600 hover:text-red-700 font-medium underline flex items-center gap-1">
@@ -123,7 +126,7 @@
 
         <!-- Options Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all">
-          <div class="p-6 border-b border-slate-100 flex items-center justify-between cursor-pointer select-none bg-slate-50/50" id="options-header">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between cursor-pointer select-none bg-slate-50/50" id="options-header">
             <h2 class="font-semibold text-slate-900 flex items-center gap-2 text-base">
               <i data-lucide="sliders" class="w-5 h-5 text-red-500"></i>
               Tùy chọn cấu hình
@@ -134,10 +137,38 @@
           </div>
 
           <div id="options-body" class="p-6 space-y-5 transition-all">
+
+            <!-- Custom Surname Option (Họ vào) -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label for="custom-surname" class="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                  <i data-lucide="user-check" class="w-4 h-4 text-red-500"></i>
+                  Cố định "Họ vào" (Tùy chọn)
+                </label>
+                <span class="text-[11px] text-slate-400">Tùy chọn họ đầu tên</span>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="custom-surname" placeholder="Nhập Họ (Ví dụ: Nguyễn, Trần, Lê...)" class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-slate-800 text-sm font-medium">
+                <select id="preset-surname" class="px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium bg-slate-50 text-slate-700 hover:bg-slate-100 focus:outline-none">
+                  <option value="">Chọn nhanh</option>
+                  <option value="Nguyễn">Nguyễn</option>
+                  <option value="Trần">Trần</option>
+                  <option value="Lê">Lê</option>
+                  <option value="Phạm">Phạm</option>
+                  <option value="Huỳnh">Huỳnh</option>
+                  <option value="Phan">Phan</option>
+                  <option value="Vũ">Vũ</option>
+                  <option value="Đặng">Đặng</option>
+                  <option value="Bùi">Bùi</option>
+                  <option value="Đỗ">Đỗ</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Length Selector -->
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
-                Độ dài tên tạo thành
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2.5">
+                Độ dài tên tạo ra
               </label>
               <div class="grid grid-cols-2 gap-3">
                 <button type="button" data-length="2" class="btn-length-opt relative flex items-center justify-between p-3.5 rounded-xl border-2 transition-all font-medium text-sm border-slate-200 hover:border-slate-300 bg-white text-slate-700">
@@ -160,20 +191,18 @@
 
             <!-- Batch Count Option -->
             <div>
-              <label for="batch-count" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-                Số lượng tên muốn tạo / lần
+              <label for="batch-count" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+                Số lượng tên tạo / mỗi lượt
               </label>
               <input type="number" id="batch-count" min="1" max="100" value="5" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-slate-800 text-sm font-medium">
             </div>
 
             <!-- Anti Duplication Rules -->
-            <div class="pt-2 border-t border-slate-100">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-medium text-slate-600">Chống trùng lặp tuyệt đối với lịch sử</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
-                  Đã bật
-                </span>
-              </div>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-medium text-slate-600">Chống trùng lặp với lịch sử</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+                Đã bật
+              </span>
             </div>
           </div>
         </div>
@@ -210,22 +239,20 @@
                 <h2 class="font-semibold text-slate-900 text-base">Kết quả vừa tạo</h2>
                 <span id="auto-indicator" class="hidden items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
                   <span class="w-2 h-2 rounded-full bg-red-600 pulse-ring"></span>
-                  Đang chạy Auto...
+                  Đang Auto...
                 </span>
               </div>
-              <div class="flex items-center gap-2">
-                <button id="btn-copy-latest" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
-                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                  Sao chép tất cả
-                </button>
-              </div>
+              <button id="btn-copy-latest" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                Sao chép kết quả vừa tạo
+              </button>
             </div>
 
             <div id="latest-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
               <!-- Default empty state -->
               <div class="col-span-full py-8 text-center text-slate-400">
                 <i data-lucide="sparkles" class="w-10 h-10 mx-auto mb-2 opacity-30"></i>
-                <p class="text-sm">Nhấn "Đặt tên ngẫu nhiên" hoặc chạy "Auto" để tạo tên mới</p>
+                <p class="text-sm">Nhấn "Đặt tên ngẫu nhiên" hoặc "Auto Vô hạn" để bắt đầu</p>
               </div>
             </div>
           </div>
@@ -239,7 +266,7 @@
         </div>
 
         <!-- Full History Section -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[520px]">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[540px]">
           <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
             <div class="flex items-center gap-2">
               <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
@@ -247,34 +274,20 @@
               <span id="history-counter" class="bg-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
             </div>
 
-            <!-- Export Buttons -->
+            <!-- Export Actions & Preview -->
             <div class="flex items-center gap-2">
-              <div class="relative group">
-                <button class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
-                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                  Xuất dữ liệu
-                  <i data-lucide="chevron-down" class="w-3 h-3 opacity-70"></i>
-                </button>
-                <div class="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-200 py-1 hidden group-hover:block z-30">
-                  <button id="btn-export-excel" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-                    <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Trang tính (.CSV)
-                  </button>
-                  <button id="btn-export-pdf" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-                    <i data-lucide="file-text" class="w-4 h-4 text-red-600"></i> Tài liệu (.PDF)
-                  </button>
-                  <button id="btn-export-txt" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-                    <i data-lucide="file-code" class="w-4 h-4 text-blue-600"></i> Tệp văn bản (.TXT)
-                  </button>
-                </div>
-              </div>
+              <button id="btn-open-export-preview" class="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
+                <i data-lucide="file-check" class="w-4 h-4 text-emerald-400"></i>
+                Xem trước & Xuất tệp
+              </button>
 
-              <button id="btn-clear-history" title="Xóa toàn bộ lịch sử" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors">
+              <button id="btn-clear-history" title="Xóa lịch sử" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
 
-          <!-- History Table/List -->
+          <!-- History List Container -->
           <div class="flex-1 overflow-y-auto p-4 space-y-2" id="history-list-container">
             <div class="h-full flex flex-col items-center justify-center text-slate-400">
               <i data-lucide="inbox" class="w-10 h-10 mb-2 stroke-1"></i>
@@ -288,27 +301,113 @@
     </div>
   </main>
 
-  <!-- Modal View Words List -->
+  <!-- MODAL 1: VIEW WORDS LIST -->
   <div id="modal-words" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 flex flex-col max-h-[80vh]">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
         <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
           <i data-lucide="list-checks" class="w-5 h-5 text-red-500"></i>
-          Danh Sách Từ Vựng Đã Tách
+          Danh Sách Từ Vựng Đã Tách Chuẩn Hóa
         </h3>
-        <button id="btn-close-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+        <button id="btn-close-modal-words" class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="text-xs text-slate-500 mb-3">Tất cả khoảng trắng/dữ liệu ngang đã được chuẩn hóa hàng dọc & loại bỏ trùng lặp.</p>
-      <div id="words-grid" class="flex-1 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-700 font-mono">
+      <p class="text-xs text-slate-500 mb-3">Nội dung sắp xếp ngang đã được tự động phân tách theo hàng dọc và loại bỏ trùng lặp.</p>
+      <div id="words-grid" class="flex-1 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-700 font-mono-code">
         <!-- Words injected here -->
       </div>
       <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
-        <button id="btn-close-modal-2" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800">
+        <button id="btn-close-modal-words-2" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800">
           Đóng
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: EXPORT PREVIEW & FULL REPORT (XEM TRƯỚC VÀ XUẤT TỆP) -->
+  <div id="modal-export" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-red-600"></i>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">Xem Trước & Xuất Tệp Đầy Đủ</h3>
+            <p class="text-xs text-slate-500">Kiểm tra hiển thị, bố cục chuẩn đẹp không bị xô lệch trước khi tải về</p>
+          </div>
+        </div>
+        <button id="btn-close-export" class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Preview Content Area) -->
+      <div class="flex-1 overflow-y-auto p-6 bg-slate-100/60">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6" id="export-document-paper">
+          
+          <!-- Document Header -->
+          <div class="border-b-2 border-red-500 pb-4 flex items-center justify-between">
+            <div>
+              <h1 class="text-xl font-bold text-slate-900 uppercase tracking-wide">BÁO CÁO DANH SÁCH TÊN ĐẶT NGẪU NHIÊN</h1>
+              <p class="text-xs text-slate-500 mt-1">Hệ thống tạo tên chuẩn hóa NameGenerator Pro</p>
+            </div>
+            <div class="text-right text-xs text-slate-500">
+              <div>Tổng cộng: <strong id="preview-total-count" class="text-slate-900">0</strong> tên</div>
+              <div class="mt-0.5">Ngày xuất: <span id="preview-export-date">--/--/----</span></div>
+            </div>
+          </div>
+
+          <!-- Table Preview -->
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 font-semibold uppercase tracking-wider border-b border-slate-200">
+                  <th class="py-3 px-4 w-20 text-center">STT</th>
+                  <th class="py-3 px-4">Họ Và Tên</th>
+                  <th class="py-3 px-4 w-28 text-center">Số Chữ</th>
+                  <th class="py-3 px-4 w-44 text-right">Thời Gian Tạo</th>
+                </tr>
+              </thead>
+              <tbody id="preview-table-body" class="divide-y divide-slate-100 text-slate-800">
+                <!-- Rows injected here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Document Footer -->
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Xác nhận danh sách không bị trùng lặp</span>
+            <span>Trang 1 / 1</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer (Download Action Buttons) -->
+      <div class="px-6 py-4 border-t border-slate-200 bg-white flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs text-slate-500 flex items-center gap-1">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+          Đã kiểm tra bố cục & không bị chèn ép chữ
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-export-excel-action" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            Xuất Trang Tính (.CSV)
+          </button>
+          <button id="btn-export-pdf-action" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+            Xuất PDF Chuẩn In
+          </button>
+          <button id="btn-export-txt-action" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i data-lucide="file-code" class="w-4 h-4"></i>
+            Xuất Tệp TXT
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -319,18 +418,17 @@
     </div>
   </footer>
 
-  <!-- App Logic Script -->
+  <!-- App Main JavaScript Logic -->
   <script>
     // --- Application State ---
     const defaultWords = [
-      "Nguyện", "Bảo", "Minh", "Quang", "Anh", "Đức", "Trần", "Lê", "Nguyễn", "Phạm",
-      "Hoàng", "Huỳnh", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương",
-      "Thái", "Sơn", "Hà", "Phong", "Long", "Chí", "Hải", "Tuấn", "Khang", "Thành",
-      "Dũng", "Nam", "Việt", "Phương", "Khánh", "Nhật", "Huy", "Hùng", "Tâm", "Kiên"
+      "Nguyện", "Bảo", "Minh", "Quang", "Anh", "Đức", "Sơn", "Hà", "Phong", "Long", 
+      "Chí", "Hải", "Tuấn", "Khang", "Thành", "Dũng", "Nam", "Việt", "Phương", "Khánh", 
+      "Nhật", "Huy", "Hùng", "Tâm", "Kiên", "Hoàng", "Lâm", "Phúc", "Thắng", "Trí"
     ];
 
     let wordPool = [...defaultWords];
-    let generatedHistory = []; // Array of objects { id, name, wordCount, timestamp }
+    let generatedHistory = []; // Array of objects { id, name, wordCount, timestamp, indexNo }
     let selectedLength = 3; // Default 3 words
     let autoInterval = null;
     let autoDuplicatesFilteredCount = 0;
@@ -343,6 +441,9 @@
     const fileSizeEl = document.getElementById('file-size');
     const statWordsEl = document.getElementById('stat-words');
     const statDuplicatesEl = document.getElementById('stat-duplicates');
+
+    const customSurnameInput = document.getElementById('custom-surname');
+    const presetSurnameSelect = document.getElementById('preset-surname');
 
     const btnToggleOptions = document.getElementById('btn-toggle-options');
     const optionsHeader = document.getElementById('options-header');
@@ -371,12 +472,20 @@
 
     const modalWords = document.getElementById('modal-words');
     const wordsGrid = document.getElementById('words-grid');
-    const btnCloseModal = document.getElementById('btn-close-modal');
-    const btnCloseModal2 = document.getElementById('btn-close-modal-2');
+    const btnCloseModalWords = document.getElementById('btn-close-modal-words');
+    const btnCloseModalWords2 = document.getElementById('btn-close-modal-words-2');
 
-    const btnExportExcel = document.getElementById('btn-export-excel');
-    const btnExportPdf = document.getElementById('btn-export-pdf');
-    const btnExportTxt = document.getElementById('btn-export-txt');
+    // Export Modal Elements
+    const modalExport = document.getElementById('modal-export');
+    const btnOpenExportPreview = document.getElementById('btn-open-export-preview');
+    const btnCloseExport = document.getElementById('btn-close-export');
+    const previewTableBody = document.getElementById('preview-table-body');
+    const previewTotalCount = document.getElementById('preview-total-count');
+    const previewExportDate = document.getElementById('preview-export-date');
+
+    const btnExportExcelAction = document.getElementById('btn-export-excel-action');
+    const btnExportPdfAction = document.getElementById('btn-export-pdf-action');
+    const btnExportTxtAction = document.getElementById('btn-export-txt-action');
 
     // --- Toast System ---
     function showToast(msg, type = 'info') {
@@ -407,10 +516,17 @@
       }, 3000);
     }
 
-    // --- Lucide Icons Reload ---
+    // --- Lucide Icons Refresh ---
     function initIcons() {
       lucide.createIcons();
     }
+
+    // Preset Surname Handler
+    presetSurnameSelect.addEventListener('change', (e) => {
+      if (e.target.value) {
+        customSurnameInput.value = e.target.value;
+      }
+    });
 
     // --- File Processing ---
     fileInput.addEventListener('change', handleFileSelect);
@@ -449,7 +565,7 @@
 
       if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
         try {
-          showToast('Đang xử lý tệp PDF...', 'info');
+          showToast('Đang xử lý đọc tệp PDF...', 'info');
           textContent = await parsePDF(file);
         } catch (err) {
           showToast('Không thể đọc tệp PDF!', 'error');
@@ -457,7 +573,6 @@
           return;
         }
       } else {
-        // Plain text file
         textContent = await file.text();
       }
 
@@ -479,11 +594,11 @@
 
     function processRawText(rawText) {
       // Automatic detection & vertical normalization:
-      // Replace non-word/Vietnamese chars with spaces, split by linebreaks, tabs, spaces, commas
+      // Split horizontal text into single vertical units
       const rawWords = rawText
         .split(/[\r\n\t,;.\s]+/)
         .map(w => w.trim())
-        .filter(w => w.length > 0 && !/^\d+$/.test(w)); // Filter out empty and pure numbers
+        .filter(w => w.length > 0 && !/^\d+$/.test(w));
 
       const uniqueWords = [];
       let duplicateCount = 0;
@@ -512,28 +627,27 @@
       showToast(`Đã tải ${wordPool.length} từ vựng từ tệp!`, 'success');
     }
 
-    // --- View Word List Modal ---
+    // --- Modal View Words ---
     btnViewWords.addEventListener('click', () => {
       wordsGrid.innerHTML = '';
       wordPool.forEach((word, idx) => {
         const div = document.createElement('div');
         div.className = 'p-2 bg-white rounded-lg border border-slate-200 shadow-2xs flex items-center gap-2';
-        div.innerHTML = `<span class="text-slate-400 text-[10px]">${idx + 1}.</span> <span class="font-medium text-slate-800">${word}</span>`;
+        div.innerHTML = `<span class="text-slate-400 text-[10px] font-mono-code">${String(idx + 1).padStart(2, '0')}</span> <span class="font-medium text-slate-800">${word}</span>`;
         wordsGrid.appendChild(div);
       });
       modalWords.classList.remove('hidden');
     });
 
-    [btnCloseModal, btnCloseModal2].forEach(btn => {
+    [btnCloseModalWords, btnCloseModalWords2].forEach(btn => {
       btn.addEventListener('click', () => modalWords.classList.add('hidden'));
     });
 
     // --- Options Toggle ---
-    function toggleOptions() {
+    optionsHeader.addEventListener('click', () => {
       optionsBody.classList.toggle('hidden');
       iconOptionsToggle.classList.toggle('rotate-180');
-    }
-    optionsHeader.addEventListener('click', toggleOptions);
+    });
 
     // --- Select Length Options ---
     btnLengthOpts.forEach(btn => {
@@ -564,29 +678,39 @@
       return wordPool[Math.floor(Math.random() * wordPool.length)];
     }
 
-    function generateSingleName(length) {
+    function generateSingleName(length, fixedSurname = '') {
       let parts = [];
-      for (let i = 0; i < length; i++) {
-        parts.push(getRandomWord());
+      
+      // If Surname is specified ("Họ vào")
+      if (fixedSurname) {
+        parts.push(fixedSurname.trim());
+        for (let i = 0; i < length - 1; i++) {
+          parts.push(getRandomWord());
+        }
+      } else {
+        for (let i = 0; i < length; i++) {
+          parts.push(getRandomWord());
+        }
       }
+      
       return parts.join(' ');
     }
 
     function generateBatchNames() {
       const count = parseInt(batchCountInput.value) || 5;
+      const fixedSurname = customSurnameInput.value.trim();
       const historySet = new Set(generatedHistory.map(item => item.name.toLowerCase()));
+      
       let newBatch = [];
-      let duplicateFilteredInBatch = 0;
-      let maxAttempts = count * 50; // Safety guard
+      let maxAttempts = count * 60;
       let attempts = 0;
 
       while (newBatch.length < count && attempts < maxAttempts) {
         attempts++;
-        const candidate = generateSingleName(selectedLength);
+        const candidate = generateSingleName(selectedLength, fixedSurname);
         
-        // Anti duplication check
+        // Anti-duplication check against history
         if (historySet.has(candidate.toLowerCase()) || newBatch.includes(candidate)) {
-          duplicateFilteredInBatch++;
           autoDuplicatesFilteredCount++;
         } else {
           newBatch.push(candidate);
@@ -594,7 +718,7 @@
       }
 
       if (newBatch.length === 0) {
-        showToast('Đã kiệt nguồn phối hợp tên mới! Vui lòng thêm từ vựng.', 'error');
+        showToast('Nguồn từ vựng hiện tại không đủ để phối tên mới không trùng!', 'error');
         stopAuto();
         return [];
       }
@@ -604,16 +728,15 @@
 
       const createdItems = newBatch.map(name => {
         const item = {
-          id: 'NAME-' + Math.random().toString(36).substr(2, 9),
+          id: 'NAME-' + Math.random().toString(36).substr(2, 7).toUpperCase(),
           name: name,
           wordCount: selectedLength,
           timestamp: timestampFormatted
         };
-        generatedHistory.unshift(item); // Add to history
+        generatedHistory.push(item); // Chronological Order (1, 2, 3...)
         return item;
       });
 
-      // Update Latest View
       renderLatest(createdItems);
       renderHistory();
 
@@ -658,19 +781,23 @@
       }
 
       historyListContainer.innerHTML = '';
-      generatedHistory.forEach((item, index) => {
+      // Display latest created on top for convenient viewing in history box
+      const historyDisplay = [...generatedHistory].reverse();
+
+      historyDisplay.forEach((item, index) => {
+        const actualIndex = generatedHistory.indexOf(item) + 1; // Standard natural 1 -> N order
         const row = document.createElement('div');
         row.className = 'p-3 bg-white rounded-xl border border-slate-100 hover:border-slate-200 flex items-center justify-between text-xs transition-all shadow-2xs';
         row.innerHTML = `
           <div class="flex items-center gap-3">
-            <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 font-mono flex items-center justify-center text-[10px] font-semibold">${generatedHistory.length - index}</span>
+            <span class="w-7 h-6 rounded-md bg-slate-100 text-slate-600 font-mono-code flex items-center justify-center text-[11px] font-medium">${String(actualIndex).padStart(2, '0')}</span>
             <div>
               <span class="font-semibold text-slate-800 text-sm">${item.name}</span>
               <span class="ml-2 text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${item.wordCount} chữ</span>
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-slate-400 text-[11px] font-mono hidden sm:inline">${item.timestamp}</span>
+            <span class="text-slate-400 text-[11px] font-mono-code hidden sm:inline">${item.timestamp}</span>
             <button onclick="copyToClipboard('${item.name}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-50 transition-colors" title="Sao chép">
               <i data-lucide="copy" class="w-4 h-4"></i>
             </button>
@@ -681,7 +808,7 @@
       initIcons();
     }
 
-    // --- Copy Clipboard Helper ---
+    // --- Copy Helper ---
     window.copyToClipboard = function(text) {
       const textarea = document.createElement('textarea');
       textarea.value = text;
@@ -699,7 +826,7 @@
     btnCopyLatest.addEventListener('click', () => {
       const cards = latestContainer.querySelectorAll('.font-bold');
       if (!cards.length) {
-        showToast('Không có tên nào để sao chép!', 'error');
+        showToast('Chưa có tên vừa tạo nào để sao chép!', 'error');
         return;
       }
       const names = Array.from(cards).map(c => c.innerText).join('\n');
@@ -712,11 +839,11 @@
         autoDuplicatesFilteredCount = 0;
         infoDuplicatesFiltered.innerText = '0';
         renderHistory();
-        showToast('Đã xóa toàn bộ lịch sử!', 'info');
+        showToast('Đã xóa lịch sử!', 'info');
       }
     });
 
-    // --- Button Event Handlers ---
+    // --- Generation Trigger Event Handlers ---
     btnGenerateOnce.addEventListener('click', () => {
       generateBatchNames();
       showToast('Đã tạo tên thành công!', 'success');
@@ -738,9 +865,9 @@
       generateBatchNames();
       autoInterval = setInterval(() => {
         generateBatchNames();
-      }, 2000); // Generate every 2 seconds
+      }, 2000);
 
-      showToast('Đã bắt đầu chế độ Auto vô hạn!', 'info');
+      showToast('Đã bật chế độ Auto vô hạn lặp lại!', 'info');
     });
 
     function stopAuto() {
@@ -763,45 +890,70 @@
 
     btnAutoStop.addEventListener('click', stopAuto);
 
-    // --- EXPORT FUNCTIONALITIES ---
+    // --- EXPORT PREVIEW MODAL & ACTIONS ---
 
-    // 1. Export Excel / CSV
-    btnExportExcel.addEventListener('click', () => {
+    btnOpenExportPreview.addEventListener('click', () => {
       if (generatedHistory.length === 0) {
-        showToast('Chưa có dữ liệu để xuất!', 'error');
+        showToast('Chưa có lịch sử tên để mở bản xem trước!', 'error');
         return;
       }
-      let csvContent = "\uFEFF"; // UTF-8 BOM for correct Vietnamese display in Excel
-      csvContent += "STT,Tên Đã Tạo,Số Chữ,Thời Gian Tạo\n";
+
+      previewTotalCount.innerText = generatedHistory.length;
+      previewExportDate.innerText = new Date().toLocaleDateString('vi-VN');
+
+      previewTableBody.innerHTML = '';
+      
+      // Render clean 1 -> N index in preview table
+      generatedHistory.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 transition-colors';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono-code text-slate-500 font-medium text-center">${String(index + 1).padStart(2, '0')}</td>
+          <td class="py-3 px-4 font-semibold text-slate-900">${item.name}</td>
+          <td class="py-3 px-4 text-slate-600 text-center">${item.wordCount} chữ</td>
+          <td class="py-3 px-4 font-mono-code text-slate-500 text-right">${item.timestamp}</td>
+        `;
+        previewTableBody.appendChild(tr);
+      });
+
+      modalExport.classList.remove('hidden');
+    });
+
+    btnCloseExport.addEventListener('click', () => {
+      modalExport.classList.add('hidden');
+    });
+
+    // 1. Export CSV / Excel
+    btnExportExcelAction.addEventListener('click', () => {
+      let csvContent = "\uFEFF"; // UTF-8 BOM for perfect Vietnamese rendering in Excel
+      csvContent += "STT,Họ Và Tên,Số Chữ,Thời Gian Tạo\n";
 
       generatedHistory.forEach((item, idx) => {
-        csvContent += `"${generatedHistory.length - idx}","${item.name}","${item.wordCount}","${item.timestamp}"\n`;
+        csvContent += `"${idx + 1}","${item.name}","${item.wordCount}","${item.timestamp}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `Danh_Sach_Ten_Generator_${Date.now()}.csv`);
+      link.setAttribute('download', `Bao_Cao_Danh_Sach_Ten_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast('Đã xuất tệp Trang tính (.CSV)!', 'success');
+      showToast('Đã xuất tệp Trang tính (.CSV) thành công!', 'success');
     });
 
     // 2. Export TXT
-    btnExportTxt.addEventListener('click', () => {
-      if (generatedHistory.length === 0) {
-        showToast('Chưa có dữ liệu để xuất!', 'error');
-        return;
-      }
-      let txtContent = "=========================================\n";
-      txtContent += "DANH SÁCH TÊN TẠO NGẪU NHIÊN - NAMEGENERATOR\n";
-      txtContent += `Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
-      txtContent += "=========================================\n\n";
+    btnExportTxtAction.addEventListener('click', () => {
+      let txtContent = "=======================================================\n";
+      txtContent += "     BÁO CÁO DANH SÁCH TÊN TẠO NGẪU NHIÊN CHUẨN HÓA\n";
+      txtContent += `     Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
+      txtContent += `     Tổng số lượng: ${generatedHistory.length} tên\n`;
+      txtContent += "=======================================================\n\n";
 
       generatedHistory.forEach((item, idx) => {
-        txtContent += `${generatedHistory.length - idx}. ${item.name} (${item.wordCount} từ) - [${item.timestamp}]\n`;
+        const numStr = String(idx + 1).padStart(3, ' ');
+        txtContent += `[${numStr}]  ${item.name.padEnd(25, ' ')} | ${item.wordCount} chữ | ${item.timestamp}\n`;
       });
 
       const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
@@ -812,43 +964,57 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast('Đã xuất tệp Văn bản (.TXT)!', 'success');
+      showToast('Đã xuất tệp Văn bản (.TXT) thành công!', 'success');
     });
 
-    // 3. Export PDF
-    btnExportPdf.addEventListener('click', () => {
-      if (generatedHistory.length === 0) {
-        showToast('Chưa có dữ liệu để xuất!', 'error');
-        return;
-      }
-
+    // 3. Export PDF (Clean Spacing Layout Print)
+    btnExportPdfAction.addEventListener('click', () => {
       const printWindow = window.open('', '_blank');
       let html = `
         <!DOCTYPE html>
-        <html>
+        <html lang="vi">
         <head>
-          <title>Danh Sách Tên Đặt Ngẫu Nhiên</title>
+          <meta charset="UTF-8">
+          <title>Báo Cáo Danh Sách Tên Đặt Ngẫu Nhiên</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1e293b; }
-            h1 { text-align: center; color: #dc2626; margin-bottom: 5px; }
-            p.sub { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 25px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 13px; }
-            th { background-color: #f8fafc; font-weight: bold; }
-            tr:nth-child(even) { background-color: #f1f5f9; }
-            .footer { margin-top: 30px; text-align: right; font-size: 11px; color: #94a3b8; }
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+            * { box-sizing: border-box; }
+            body { font-family: 'Roboto', sans-serif; padding: 40px; color: #0f172a; line-height: 1.5; }
+            .header { border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .title { font-size: 20px; font-weight: 700; color: #111827; text-transform: uppercase; margin: 0; }
+            .subtitle { font-size: 12px; color: #6b7280; margin-top: 4px; }
+            .meta { text-align: right; font-size: 12px; color: #4b5563; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+            th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; word-break: break-word; }
+            th { background-color: #f8fafc; font-weight: 700; color: #334155; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .stt { width: 60px; text-align: center; font-weight: 500; color: #64748b; }
+            .name-cell { font-weight: 700; color: #0f172a; font-size: 14px; }
+            .center { text-align: center; }
+            .right { text-align: right; }
+            .footer { margin-top: 30px; border-t: 1px solid #e2e8f0; padding-top: 10px; font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; }
+            @page { size: A4; margin: 15mm; }
           </style>
         </head>
         <body>
-          <h1>DANH SÁCH TÊN TẠO NGẪU NHIÊN</h1>
-          <p class="sub">Xuất từ hệ thống NameGenerator Pro | Tổng số: ${generatedHistory.length} tên</p>
+          <div class="header">
+            <div>
+              <h1 class="title">BÁO CÁO DANH SÁCH TÊN TẠO NGẪU NHIÊN</h1>
+              <div class="subtitle">Hệ thống tạo tên chuẩn hóa NameGenerator Pro</div>
+            </div>
+            <div class="meta">
+              <div>Tổng cộng: <strong>${generatedHistory.length}</strong> tên</div>
+              <div>Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}</div>
+            </div>
+          </div>
+
           <table>
             <thead>
               <tr>
-                <th style="width: 50px;">STT</th>
-                <th>Họ & Tên</th>
-                <th style="width: 80px;">Số từ</th>
-                <th>Thời gian tạo</th>
+                <th class="stt">STT</th>
+                <th>Họ Và Tên</th>
+                <th class="center" style="width: 100px;">Số Chữ</th>
+                <th class="right" style="width: 180px;">Thời Gian Tạo</th>
               </tr>
             </thead>
             <tbody>
@@ -857,10 +1023,10 @@
       generatedHistory.forEach((item, idx) => {
         html += `
           <tr>
-            <td>${generatedHistory.length - idx}</td>
-            <td><strong>${item.name}</strong></td>
-            <td>${item.wordCount} chữ</td>
-            <td>${item.timestamp}</td>
+            <td class="stt">${String(idx + 1).padStart(2, '0')}</td>
+            <td class="name-cell">${item.name}</td>
+            <td class="center">${item.wordCount} chữ</td>
+            <td class="right">${item.timestamp}</td>
           </tr>
         `;
       });
@@ -868,7 +1034,12 @@
       html += `
             </tbody>
           </table>
-          <div class="footer">Ngày xuất: ${new Date().toLocaleString('vi-VN')}</div>
+
+          <div class="footer">
+            <span>Xác nhận danh sách không bị chèn ép chữ hay trùng lặp</span>
+            <span>Trang 1</span>
+          </div>
+
           <script>
             window.onload = function() { window.print(); }
           <\/script>
@@ -878,10 +1049,10 @@
 
       printWindow.document.write(html);
       printWindow.document.close();
-      showToast('Đang mở cửa sổ in/xuất PDF...', 'info');
+      showToast('Đang chuẩn bị trang in PDF...', 'info');
     });
 
-    // --- Initialize Page ---
+    // --- Page Init ---
     window.addEventListener('load', () => {
       initIcons();
     });
