@@ -23,7 +23,6 @@
       background-color: #f8fafc;
       color: #1e293b;
     }
-    /* Custom Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -39,16 +38,9 @@
       background: #94a3b8;
     }
     .active-option {
-      color: #dc2626 !important; /* Red color */
+      color: #dc2626 !important;
       border-color: #dc2626 !important;
       background-color: #fef2f2 !important;
-    }
-    .pulse-animation {
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
     }
   </style>
 </head>
@@ -69,23 +61,23 @@
       <div class="flex items-center space-x-2">
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
           <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-          Hoạt động chính xác 100%
+          Đang hoạt động 100%
         </span>
       </div>
     </div>
   </header>
 
-  <!-- Notification Toast Container -->
+  <!-- Toast Alert -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- Main Container -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- LEFT / TOP PANEL: CONTROLS & INPUT (7 Cols) -->
+    <!-- LEFT PANEL -->
     <div class="lg:col-span-7 space-y-6">
 
-      <!-- STEP 1: Upload & Process Data File -->
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm transition-all hover:shadow-md">
+      <!-- STEP 1: Upload & Process -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-sm font-bold">1</span>
@@ -94,7 +86,6 @@
           <span class="text-xs text-slate-400">Hỗ trợ .TXT, .PDF</span>
         </div>
 
-        <!-- File Drag & Drop Box -->
         <div class="border-2 border-dashed border-slate-300 hover:border-red-500 bg-slate-50/50 hover:bg-red-50/20 rounded-xl p-5 text-center transition-all cursor-pointer relative" id="drop-zone">
           <input type="file" id="file-input" accept=".txt,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
           <div class="space-y-2 pointer-events-none">
@@ -102,31 +93,27 @@
               <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
             </div>
             <p class="text-sm font-medium text-slate-700">Kéo thả tệp vào đây hoặc <span class="text-red-600 font-semibold underline">chọn tệp từ máy</span></p>
-            <p class="text-xs text-slate-400">Tự động nhận diện danh sách ngang, tách thành dọc & loại bỏ trùng lặp</p>
+            <p class="text-xs text-slate-400">Tự động chuyển hàng ngang thành hàng dọc (1 chữ/hàng) & loại trùng</p>
           </div>
         </div>
 
-        <!-- Loading indicator for file processing -->
         <div id="file-loading" class="hidden mt-3 text-center py-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-center justify-center gap-2">
           <i class="fa-solid fa-spinner animate-spin"></i>
           <span>Đang xử lý tệp & bóc tách dữ liệu...</span>
         </div>
 
-        <!-- Word List Preview -->
-        <div id="word-list-container" class="mt-4 hidden border-t border-slate-100 pt-3">
+        <div id="word-list-container" class="mt-4 border-t border-slate-100 pt-3">
           <div class="flex justify-between items-center mb-2">
             <span class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Danh Sách Từ Đã Xử Lý Dọc (<span id="parsed-count" class="text-red-600 font-bold">0</span> từ):</span>
             <button id="btn-toggle-words" class="text-xs text-red-600 hover:underline font-medium">Ẩn/Hiện danh sách</button>
           </div>
           <div id="word-preview-box" class="max-h-36 overflow-y-auto bg-slate-100 p-2.5 rounded-lg text-xs font-mono text-slate-700 flex flex-wrap gap-1.5 border border-slate-200">
-            <!-- Badges will be inserted here -->
           </div>
         </div>
       </div>
 
-      <!-- STEP 2: Configuration Options (Collapsible) -->
+      <!-- STEP 2: Options -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <!-- Option Header & Toggle -->
         <div id="option-header" class="p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors">
           <div class="flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-sm font-bold">2</span>
@@ -137,13 +124,10 @@
           </button>
         </div>
 
-        <!-- Option Content Area -->
         <div id="option-content" class="p-5 border-t border-slate-100 space-y-5">
-          <!-- Name Length Selection -->
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Độ dài tên mong muốn:</label>
             <div class="grid grid-cols-2 gap-3">
-              <!-- 2 Words Option -->
               <button type="button" id="opt-2-words" onclick="selectLength(2)" class="name-length-btn flex items-center justify-between px-4 py-3 border-2 rounded-xl border-slate-200 bg-white hover:border-slate-300 font-medium text-slate-700 transition-all active-option">
                 <span class="flex items-center gap-2">
                   <i class="fa-solid fa-font text-base"></i>
@@ -152,7 +136,6 @@
                 <i class="fa-solid fa-circle-check text-red-600 text-lg check-icon"></i>
               </button>
 
-              <!-- 3 Words Option -->
               <button type="button" id="opt-3-words" onclick="selectLength(3)" class="name-length-btn flex items-center justify-between px-4 py-3 border-2 rounded-xl border-slate-200 bg-white hover:border-slate-300 font-medium text-slate-700 transition-all">
                 <span class="flex items-center gap-2">
                   <i class="fa-solid fa-font-case text-base"></i>
@@ -163,7 +146,6 @@
             </div>
           </div>
 
-          <!-- Rules & Exclusions -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Số lượng mỗi lần tạo:</label>
@@ -180,26 +162,22 @@
       <!-- STEP 3: Action Buttons -->
       <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <!-- Generate Once Button -->
           <button id="btn-generate" class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-red-200 hover:shadow-lg transition-all active:scale-95">
             <i class="fa-solid fa-dice"></i>
             <span>Đặt Tên Ngẫu Nhiên</span>
           </button>
 
-          <!-- Auto Infinite Loop Button -->
           <button id="btn-auto" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-emerald-200 hover:shadow-lg transition-all active:scale-95">
             <i class="fa-solid fa-rotate-right"></i>
             <span>Auto Vô Hạn Lặp Lại</span>
           </button>
 
-          <!-- Stop Button -->
           <button id="btn-stop" disabled class="flex items-center justify-center gap-2 bg-slate-200 text-slate-400 font-semibold py-3 px-4 rounded-xl transition-all cursor-not-allowed">
             <i class="fa-solid fa-circle-stop"></i>
             <span>Dừng Lại</span>
           </button>
         </div>
 
-        <!-- Status Indicator -->
         <div id="status-bar" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
           <span class="flex items-center gap-2 font-medium">
             <i class="fa-solid fa-gear animate-spin text-amber-600"></i>
@@ -209,10 +187,10 @@
         </div>
       </div>
 
-      <!-- STATS SUMMARY CARD -->
+      <!-- Stats Card -->
       <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
         <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie text-red-500"></i> Thống Kê Tổng Quan Hệ Thống
+          <i class="fa-solid fa-chart-pie text-red-500"></i> Thống Kê Hệ Thống
         </h3>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -236,12 +214,10 @@
 
     </div>
 
-    <!-- RIGHT PANEL: RESULTS & HISTORY & EXPORT (5 Cols) -->
+    <!-- RIGHT PANEL -->
     <div class="lg:col-span-5 space-y-6">
 
-      <!-- History & Output Box -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[620px]">
-        <!-- Box Header -->
         <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-list-check text-red-600"></i>
@@ -250,7 +226,6 @@
           <span class="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold" id="badge-history-count">0 tên</span>
         </div>
 
-        <!-- Quick Actions Toolbar -->
         <div class="p-3 bg-white border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
             <button id="btn-copy-all" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors">
@@ -264,33 +239,26 @@
           </div>
         </div>
 
-        <!-- Scrollable Results Container -->
         <div id="results-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/30">
-          <!-- Empty State -->
           <div id="empty-state" class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 text-2xl mb-3">
               <i class="fa-solid fa-folder-open"></i>
             </div>
-            <p class="text-sm font-medium text-slate-600">Chưa có tên nào được tạo</p>
-            <p class="text-xs text-slate-400 mt-1 max-w-xs">Tải tệp nguồn lên và nhấn "Đặt tên ngẫu nhiên" để bắt đầu tạo tên tự nhiên chuẩn xác.</p>
+            <p class="text-sm font-medium text-slate-600">Đang khởi tạo tên...</p>
           </div>
         </div>
 
-        <!-- Export Buttons Section -->
         <div class="p-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl space-y-2">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Xuất toàn bộ danh sách tệp:</label>
           <div class="grid grid-cols-3 gap-2">
-            <!-- Export TXT -->
             <button id="btn-export-txt" class="flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-2.5 rounded-lg transition-colors shadow-sm">
               <i class="fa-solid fa-file-lines text-blue-500"></i>
               <span>Xuất TXT</span>
             </button>
-            <!-- Export Excel / Sheet -->
             <button id="btn-export-sheet" class="flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-2.5 rounded-lg transition-colors shadow-sm">
               <i class="fa-solid fa-file-excel text-emerald-600"></i>
               <span>Trang tính</span>
             </button>
-            <!-- Export PDF -->
             <button id="btn-export-pdf" class="flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-2.5 rounded-lg transition-colors shadow-sm">
               <i class="fa-solid fa-file-pdf text-red-500"></i>
               <span>Xuất PDF</span>
@@ -304,7 +272,7 @@
 
   </main>
 
-  <!-- HIDDEN PRINT/PDF TEMPLATE CONTAINER -->
+  <!-- PDF Export Template -->
   <div class="hidden">
     <div id="pdf-export-template" class="p-8 bg-white font-sans text-slate-800">
       <div class="border-b-2 border-red-600 pb-4 mb-6 flex justify-between items-center">
@@ -317,7 +285,6 @@
         </div>
       </div>
 
-      <!-- Stats Summary in Export -->
       <div class="grid grid-cols-4 gap-4 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 text-center">
         <div>
           <span class="block text-xs text-slate-500">Tổng Số Tên:</span>
@@ -332,12 +299,11 @@
           <span class="text-lg font-bold text-amber-600" id="pdf-stat-invalid">0</span>
         </div>
         <div>
-          <span class="block text-xs text-slate-500">Độ Dài Tên Quy Định:</span>
+          <span class="block text-xs text-slate-500">Độ Dài Tên:</span>
           <span class="text-lg font-bold text-blue-600" id="pdf-stat-length">--</span>
         </div>
       </div>
 
-      <!-- Table of Created Names -->
       <table class="w-full text-left text-xs border-collapse">
         <thead>
           <tr class="bg-slate-100 border-b border-slate-300">
@@ -348,26 +314,22 @@
           </tr>
         </thead>
         <tbody id="pdf-table-body" class="divide-y divide-slate-200">
-          <!-- Table rows injected via JS -->
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
-    // GLOBAL STATE MANAGEMENT
     const state = {
-      wordPool: [],                 // Processed unique single words extracted from file
-      createdHistory: [],           // Array of objects: { id, name, wordCount, timestamp, dupRemoved, invalidRemoved }
-      selectedLength: 2,            // 2 words or 3 words
-      isAutoRunning: false,         // Auto infinite state
-      autoIntervalId: null,         // Interval ID for auto generation
-      totalDuplicatesRemoved: 0,    // Overall cumulative removed duplicates count
-      totalInvalidRemoved: 0        // Overall cumulative removed invalid count
+      wordPool: ["Bình", "An", "Minh", "Quang", "Đức", "Trí", "Thành", "Bảo", "Hùng", "Sơn", "Hải", "Tuấn", "Hoàng", "Phúc", "Lâm", "Khánh", "Việt", "Nam", "Khang", "Huy"],
+      createdHistory: [],
+      selectedLength: 2,
+      isAutoRunning: false,
+      autoIntervalId: null,
+      totalDuplicatesRemoved: 0,
+      totalInvalidRemoved: 0
     };
 
-    // DOM ELEMENTS
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
     const fileLoading = document.getElementById('file-loading');
@@ -405,14 +367,12 @@
     const btnExportSheet = document.getElementById('btn-export-sheet');
     const btnExportPdf = document.getElementById('btn-export-pdf');
 
-    // INITIALIZATION & EVENT LISTENERS
     window.addEventListener('DOMContentLoaded', () => {
-      // Default sample words if user hasn't uploaded a file yet
-      const sampleWords = ["Bình", "An", "Minh", "Quang", "Đức", "Trí", "Thành", "Bảo", "Hùng", "Sơn", "Hải", "Tuấn", "Hoàng", "Phúc", "Lâm"];
-      state.wordPool = sampleWords;
       renderWordPool();
 
-      // Drag & Drop File Handlers
+      // AUTO GENERATE 5 INITIAL NAMES UPON PAGE LOAD
+      generateNamesOnce();
+
       ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => {
           e.preventDefault();
@@ -437,33 +397,27 @@
         if (e.target.files.length) handleFileUpload(e.target.files[0]);
       });
 
-      // Toggle Options Accordion
       optionHeader.addEventListener('click', () => {
         optionContent.classList.toggle('hidden');
         iconChevron.classList.toggle('rotate-180');
       });
 
-      // Toggle Word Preview Box
       btnToggleWords.addEventListener('click', () => {
         wordPreviewBox.classList.toggle('hidden');
       });
 
-      // Generation Triggers
       btnGenerate.addEventListener('click', () => generateNamesOnce());
       btnAuto.addEventListener('click', startAutoLoop);
       btnStop.addEventListener('click', stopAutoLoop);
 
-      // Utility Buttons
       btnCopyAll.addEventListener('click', copyAllToClipboard);
       btnClearHistory.addEventListener('click', clearHistory);
 
-      // Export Buttons
       btnExportTxt.addEventListener('click', exportToTXT);
       btnExportSheet.addEventListener('click', exportToSheet);
       btnExportPdf.addEventListener('click', exportToPDF);
     });
 
-    // 1. FILE PROCESSING FUNCTIONS (.TXT & .PDF)
     async function handleFileUpload(file) {
       const ext = file.name.split('.').pop().toLowerCase();
       if (!['txt', 'pdf'].includes(ext)) {
@@ -485,7 +439,7 @@
         showToast(`Đã xử lý tệp ${file.name} thành công!`, 'success');
       } catch (err) {
         console.error(err);
-        showToast('Lỗi khi đọc tệp. Vui lòng kiểm tra định dạng tệp!', 'error');
+        showToast('Lỗi khi đọc tệp. Vui lòng kiểm tra lại!', 'error');
       } finally {
         fileLoading.classList.add('hidden');
       }
@@ -514,25 +468,17 @@
       return fullText;
     }
 
-    // Process raw text: horizontal -> vertical (split words), deduplicate
     function processRawTextToWords(text) {
       if (!text) return;
-
-      // Replace commas, semicolons, tabs, newlines with single spaces
       const cleaned = text.replace(/[,;\t\r\n]+/g, ' ');
-      
-      // Split into single words by spaces
       const rawWords = cleaned.split(/\s+/);
 
-      // Clean individual words (remove special characters/punctuation, keep letters/Vietnamese accents)
       const validWords = [];
       const seen = new Set();
 
       rawWords.forEach(w => {
-        // Strip non-alphanumeric punctuation surrounding words
         const cleanedWord = w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').trim();
         if (cleanedWord.length > 0) {
-          // Capitalize first letter properly
           const formatted = cleanedWord.charAt(0).toUpperCase() + cleanedWord.slice(1).toLowerCase();
           if (!seen.has(formatted.toLowerCase())) {
             seen.add(formatted.toLowerCase());
@@ -561,15 +507,10 @@
         badge.textContent = word;
         wordPreviewBox.appendChild(badge);
       });
-
-      wordListContainer.classList.remove('hidden');
     }
 
-    // 2. OPTION CONTROLS (Name Length Selection)
     function selectLength(len) {
       state.selectedLength = len;
-      
-      // Update UI buttons
       const btn2Check = opt2Words.querySelector('.check-icon');
       const btn3Check = opt3Words.querySelector('.check-icon');
 
@@ -586,41 +527,33 @@
       }
     }
 
-    // 3. REAL GENERATION LOGIC
     function generateNamesOnce() {
       if (state.wordPool.length < state.selectedLength) {
-        showToast(`Danh sách từ gốc cần ít nhất ${state.selectedLength} từ để tạo tên!`, 'warning');
+        showToast(`Cần ít nhất ${state.selectedLength} từ gốc để đặt tên!`, 'warning');
         return;
       }
 
       showStatus('Đang xử lý & tạo tên...');
-      
       const countInput = parseInt(document.getElementById('gen-count').value) || 5;
       let newNamesCreated = 0;
       let duplicatesInBatch = 0;
       let invalidInBatch = 0;
 
-      // Existing generated names in history for deduplication
       const historySet = new Set(state.createdHistory.map(item => item.name.toLowerCase()));
-
-      let maxAttempts = countInput * 20; // Safety limit to avoid infinite loops
+      let maxAttempts = countInput * 25;
       let attempts = 0;
 
       while (newNamesCreated < countInput && attempts < maxAttempts) {
         attempts++;
-
-        // Randomly pick N words from word pool
         const words = shuffleArray([...state.wordPool]).slice(0, state.selectedLength);
         const nameCandidate = words.join(' ');
 
-        // Rule Check 1: Check if duplicate with history
         if (historySet.has(nameCandidate.toLowerCase())) {
           duplicatesInBatch++;
           state.totalDuplicatesRemoved++;
           continue;
         }
 
-        // Rule Check 2: Uniqueness within the name itself (e.g. "An An" is invalid unless intended)
         const uniqueInName = new Set(words.map(w => w.toLowerCase()));
         if (uniqueInName.size < state.selectedLength) {
           invalidInBatch++;
@@ -628,7 +561,6 @@
           continue;
         }
 
-        // Valid Name Created
         historySet.add(nameCandidate.toLowerCase());
         const timestampStr = new Date().toLocaleTimeString('vi-VN', { hour12: false }) + '.' + String(new Date().getMilliseconds()).padStart(3, '0');
 
@@ -636,12 +568,10 @@
           id: Date.now() + Math.random(),
           name: nameCandidate,
           wordCount: state.selectedLength,
-          timestamp: timestampStr,
-          dupRemoved: duplicatesInBatch,
-          invalidRemoved: invalidInBatch
+          timestamp: timestampStr
         };
 
-        state.createdHistory.unshift(newItem); // Add to top of history
+        state.createdHistory.unshift(newItem);
         newNamesCreated++;
       }
 
@@ -651,23 +581,20 @@
       if (newNamesCreated > 0) {
         showToast(`Đã tạo thành công ${newNamesCreated} tên!`, 'success');
       } else {
-        showToast('Đã cạn tổ hợp tên mới chưa trùng lặp!', 'warning');
+        showToast('Tất cả tổ hợp tên đã bị trùng!', 'warning');
       }
     }
 
-    // Auto Infinite Loop Logic
     function startAutoLoop() {
       if (state.isAutoRunning) return;
-
       if (state.wordPool.length < state.selectedLength) {
-        showToast(`Danh sách từ gốc cần ít nhất ${state.selectedLength} từ!`, 'warning');
+        showToast(`Cần ít nhất ${state.selectedLength} từ!`, 'warning');
         return;
       }
 
       const speedSec = parseFloat(document.getElementById('auto-speed').value) || 1.5;
       state.isAutoRunning = true;
 
-      // UI updates for Auto mode
       btnAuto.disabled = true;
       btnAuto.classList.add('opacity-50', 'cursor-not-allowed');
       btnGenerate.disabled = true;
@@ -678,12 +605,9 @@
       btnStop.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white', 'shadow-md', 'shadow-red-200');
 
       autoBadge.classList.remove('hidden');
-      showStatus('Đang khởi chạy chế độ Auto Vô hạn...');
+      showStatus('Auto đang chạy liên tục...');
 
-      // First run immediate
       generateNamesOnce();
-
-      // Loop
       state.autoIntervalId = setInterval(() => {
         if (!state.isAutoRunning) return;
         generateNamesOnce();
@@ -696,7 +620,6 @@
       state.isAutoRunning = false;
       if (state.autoIntervalId) clearInterval(state.autoIntervalId);
 
-      // UI updates after stopping
       btnAuto.disabled = false;
       btnAuto.classList.remove('opacity-50', 'cursor-not-allowed');
       btnGenerate.disabled = false;
@@ -708,18 +631,15 @@
 
       autoBadge.classList.add('hidden');
       hideStatus();
-      showToast('Đã dừng chế độ Auto lặp vô hạn!', 'info');
+      showToast('Đã dừng chế độ Auto!', 'info');
     }
 
-    // 4. UI UPDATE FUNCTIONS
     function updateUI() {
-      // Update Stats Numbers
       statTotalCreated.textContent = state.createdHistory.length;
       statDuplicatesRemoved.textContent = state.totalDuplicatesRemoved;
       statInvalidRemoved.textContent = state.totalInvalidRemoved;
       badgeHistoryCount.textContent = `${state.createdHistory.length} tên`;
 
-      // Render History List
       if (state.createdHistory.length === 0) {
         emptyState.classList.remove('hidden');
         resultsList.querySelectorAll('.name-card').forEach(el => el.remove());
@@ -727,13 +647,11 @@
       }
 
       emptyState.classList.add('hidden');
-
-      // Re-render items
       resultsList.querySelectorAll('.name-card').forEach(el => el.remove());
 
       state.createdHistory.forEach((item, index) => {
         const card = document.createElement('div');
-        card.className = 'name-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs hover:border-red-300 transition-all flex flex-col gap-2 group';
+        card.className = 'name-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs hover:border-red-300 transition-all flex flex-col gap-2';
         card.innerHTML = `
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono font-bold text-slate-400">#${state.createdHistory.length - index}</span>
@@ -770,7 +688,6 @@
       }
     }
 
-    // 5. COPY & EXPORT LOGIC
     function copySingleName(name) {
       copyToClipboardText(name);
       showToast(`Đã sao chép: "${name}"`, 'success');
@@ -778,10 +695,9 @@
 
     function copyAllToClipboard() {
       if (state.createdHistory.length === 0) {
-        showToast('Lịch sử trống, chưa có tên để sao chép!', 'warning');
+        showToast('Lịch sử trống!', 'warning');
         return;
       }
-
       const allNames = state.createdHistory.map(item => item.name).join('\n');
       copyToClipboardText(allNames);
       showToast(`Đã sao chép toàn bộ ${state.createdHistory.length} tên!`, 'success');
@@ -791,7 +707,6 @@
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text);
       } else {
-        // Fallback execution
         const textarea = document.createElement('textarea');
         textarea.value = text;
         document.body.appendChild(textarea);
@@ -803,7 +718,7 @@
 
     function clearHistory() {
       if (state.createdHistory.length === 0) return;
-      if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tên đã tạo?')) {
+      if (confirm('Xóa sạch toàn bộ danh sách tên đã tạo?')) {
         state.createdHistory = [];
         state.totalDuplicatesRemoved = 0;
         state.totalInvalidRemoved = 0;
@@ -812,54 +727,29 @@
       }
     }
 
-    // EXPORT TO TXT
     function exportToTXT() {
-      if (state.createdHistory.length === 0) {
-        showToast('Chưa có danh sách để xuất tệp!', 'warning');
-        return;
-      }
-
-      let content = `=== DANH SÁCH TÊN ĐÃ TẠO ===\n`;
-      content += `Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
-      content += `Tổng số tên: ${state.createdHistory.length}\n`;
-      content += `Tổng trùng lặp đã loại bỏ: ${state.totalDuplicatesRemoved}\n`;
-      content += `===================================\n\n`;
-
+      if (state.createdHistory.length === 0) return showToast('Chưa có tên để xuất!', 'warning');
+      let content = `=== DANH SÁCH TÊN ĐÃ TẠO ===\nThời gian: ${new Date().toLocaleString('vi-VN')}\nTổng số tên: ${state.createdHistory.length}\n===================================\n\n`;
       state.createdHistory.forEach((item, i) => {
         content += `${i + 1}. ${item.name} (${item.wordCount} chữ) - [${item.timestamp}]\n`;
       });
-
       downloadBlob(content, `Danh_Sach_Ten_${Date.now()}.txt`, 'text/plain;charset=utf-8');
-      showToast('Đã tải xuống tệp TXT thành công!', 'success');
+      showToast('Xuất TXT thành công!', 'success');
     }
 
-    // EXPORT TO SHEET (CSV)
     function exportToSheet() {
-      if (state.createdHistory.length === 0) {
-        showToast('Chưa có danh sách để xuất trang tính!', 'warning');
-        return;
-      }
-
-      // Add UTF-8 BOM for proper Excel Vietnamese accent rendering
-      let csvContent = "\uFEFF";
-      csvContent += "STT,Tên Được Tạo,Số Chữ,Thời Gian Tạo\n";
-
+      if (state.createdHistory.length === 0) return showToast('Chưa có tên để xuất!', 'warning');
+      let csvContent = "\uFEFFSTT,Tên Được Tạo,Số Chữ,Thời Gian Tạo\n";
       state.createdHistory.forEach((item, i) => {
         csvContent += `"${i + 1}","${item.name}","${item.wordCount}","${item.timestamp}"\n`;
       });
-
       downloadBlob(csvContent, `Trang_Tinh_Ten_${Date.now()}.csv`, 'text/csv;charset=utf-8');
-      showToast('Đã xuất tệp Trang Tính (CSV) thành công!', 'success');
+      showToast('Xuất Trang Tính CSV thành công!', 'success');
     }
 
-    // EXPORT TO PDF
     function exportToPDF() {
-      if (state.createdHistory.length === 0) {
-        showToast('Chưa có danh sách để xuất tệp PDF!', 'warning');
-        return;
-      }
+      if (state.createdHistory.length === 0) return showToast('Chưa có tên để xuất!', 'warning');
 
-      // Populate PDF hidden template
       document.getElementById('pdf-time-stamp').textContent = `Thời gian: ${new Date().toLocaleString('vi-VN')}`;
       document.getElementById('pdf-stat-total').textContent = state.createdHistory.length;
       document.getElementById('pdf-stat-dup').textContent = state.totalDuplicatesRemoved;
@@ -893,15 +783,14 @@
 
       html2pdf().set(opt).from(element).save().then(() => {
         element.parentElement.classList.add('hidden');
-        showToast('Đã xuất tệp PDF đẹp mắt thành công!', 'success');
+        showToast('Xuất PDF thành công!', 'success');
       }).catch(err => {
         console.error(err);
         element.parentElement.classList.add('hidden');
-        showToast('Có lỗi xảy ra khi xuất PDF!', 'error');
+        showToast('Lỗi khi tạo PDF!', 'error');
       });
     }
 
-    // HELPER UTILITIES
     function downloadBlob(content, filename, contentType) {
       const blob = new Blob([content], { type: contentType });
       const url = URL.createObjectURL(blob);
@@ -928,7 +817,7 @@
       return text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
+        .replace(/ me>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
@@ -956,12 +845,10 @@
 
       container.appendChild(toast);
 
-      // Animate in
       requestAnimationFrame(() => {
         toast.classList.remove('translate-y-2', 'opacity-0');
       });
 
-      // Remove after 3s
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-2');
         setTimeout(() => toast.remove(), 300);
