@@ -3,26 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ứng Dụng Đặt Tên Ngẫu Nhiên Thông Minh</title>
+  <title>Trình Đặt Tên Ngẫu Nhiên Chuyên Nghiệp</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- PDF.js for Reading PDFs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- PDF.js library for parsing PDF files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
-  <!-- html2pdf.js for PDF Exporting -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f8fafc;
-      color: #1e293b;
+      color: #0f172a;
     }
+    /* Custom Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -37,428 +35,439 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    .active-option {
-      color: #dc2626 !important;
-      border-color: #dc2626 !important;
-      background-color: #fef2f2 !important;
+    .pulse-ring {
+      animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800 pb-12">
+<body class="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800">
 
-  <!-- Header Section -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-red-200">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700">
+    <i id="toast-icon" data-lucide="info" class="w-5 h-5 text-emerald-400"></i>
+    <span id="toast-msg" class="text-sm font-medium">Thông báo</span>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center text-white shadow-md shadow-red-200">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-slate-900 leading-tight">Hệ Thống Đặt Tên Ngẫu Nhiên</h1>
-          <p class="text-xs text-slate-500">Xử lý dữ liệu chuẩn xác • Chống trùng lặp tuyệt đối</p>
+          <h1 class="font-bold text-lg text-slate-900 leading-tight">NameGenerator Pro</h1>
+          <p class="text-xs text-slate-500">Hệ thống tạo tên ngẫu nhiên chuẩn hóa</p>
         </div>
       </div>
-      <div class="flex items-center space-x-2">
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-          <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-          Đang hoạt động 100%
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Hệ thống sẵn sàng
         </span>
       </div>
     </div>
   </header>
 
-  <!-- Toast Alert -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-    <!-- LEFT PANEL -->
-    <div class="lg:col-span-7 space-y-6">
+      <!-- LEFT COLUMN: CONTROL & INPUT -->
+      <div class="lg:col-span-5 space-y-6">
 
-      <!-- STEP 1: Upload & Process -->
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-sm font-bold">1</span>
-            Tải Lên Và Xử Lý Tệp Thông Minh
-          </h2>
-          <span class="text-xs text-slate-400">Hỗ trợ .TXT, .PDF</span>
-        </div>
+        <!-- File Upload Card -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm transition-all hover:shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-slate-900 flex items-center gap-2 text-base">
+              <i data-lucide="file-up" class="w-5 h-5 text-red-500"></i>
+              Nguồn dữ liệu từ Tệp
+            </h2>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono">.TXT, .PDF</span>
+          </div>
 
-        <div class="border-2 border-dashed border-slate-300 hover:border-red-500 bg-slate-50/50 hover:bg-red-50/20 rounded-xl p-5 text-center transition-all cursor-pointer relative" id="drop-zone">
-          <input type="file" id="file-input" accept=".txt,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-          <div class="space-y-2 pointer-events-none">
-            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-red-500 shadow-sm border border-slate-100">
-              <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+          <div class="space-y-4">
+            <label id="drop-zone" class="relative group flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-red-400 rounded-xl p-6 transition-all cursor-pointer bg-slate-50 hover:bg-red-50/30">
+              <input type="file" id="file-input" accept=".txt,.pdf" class="hidden" />
+              <div class="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-slate-500 group-hover:scale-110 group-hover:text-red-500 transition-all mb-3">
+                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+              </div>
+              <p class="text-sm font-medium text-slate-700 text-center">Tải lên tệp danh sách từ ngữ</p>
+              <p class="text-xs text-slate-400 text-center mt-1">Kéo thả tệp hoặc nhấp để chọn tệp</p>
+            </label>
+
+            <!-- File Processing Preview -->
+            <div id="file-summary" class="hidden bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs space-y-2">
+              <div class="flex items-center justify-between text-slate-700 font-medium pb-2 border-b border-slate-200">
+                <span id="file-name" class="truncate max-w-[200px] font-semibold text-red-600">file.txt</span>
+                <span id="file-size" class="text-slate-400">0 KB</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-slate-600 pt-1">
+                <div>Từ hợp lệ: <strong id="stat-words" class="text-slate-900">0</strong></div>
+                <div>Từ trùng loại bỏ: <strong id="stat-duplicates" class="text-amber-600">0</strong></div>
+              </div>
+              <div class="pt-2">
+                <button id="btn-view-words" class="text-xs text-red-600 hover:text-red-700 font-medium underline flex items-center gap-1">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  Xem danh sách từ đã tách
+                </button>
+              </div>
             </div>
-            <p class="text-sm font-medium text-slate-700">Kéo thả tệp vào đây hoặc <span class="text-red-600 font-semibold underline">chọn tệp từ máy</span></p>
-            <p class="text-xs text-slate-400">Tự động chuyển hàng ngang thành hàng dọc (1 chữ/hàng) & loại trùng</p>
           </div>
         </div>
 
-        <div id="file-loading" class="hidden mt-3 text-center py-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-center justify-center gap-2">
-          <i class="fa-solid fa-spinner animate-spin"></i>
-          <span>Đang xử lý tệp & bóc tách dữ liệu...</span>
+        <!-- Options Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all">
+          <div class="p-6 border-b border-slate-100 flex items-center justify-between cursor-pointer select-none bg-slate-50/50" id="options-header">
+            <h2 class="font-semibold text-slate-900 flex items-center gap-2 text-base">
+              <i data-lucide="sliders" class="w-5 h-5 text-red-500"></i>
+              Tùy chọn cấu hình
+            </h2>
+            <button id="btn-toggle-options" class="p-1 rounded-lg hover:bg-slate-200/60 text-slate-500 transition-colors">
+              <i data-lucide="chevron-up" id="icon-options-toggle" class="w-5 h-5 transition-transform duration-300"></i>
+            </button>
+          </div>
+
+          <div id="options-body" class="p-6 space-y-5 transition-all">
+            <!-- Length Selector -->
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                Độ dài tên tạo thành
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <button type="button" data-length="2" class="btn-length-opt relative flex items-center justify-between p-3.5 rounded-xl border-2 transition-all font-medium text-sm border-slate-200 hover:border-slate-300 bg-white text-slate-700">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="type" class="w-4 h-4 text-slate-400"></i>
+                    <span>Tên 2 chữ</span>
+                  </div>
+                  <i data-lucide="check-circle-2" class="w-5 h-5 opacity-0 text-red-600 transition-opacity check-icon"></i>
+                </button>
+
+                <button type="button" data-length="3" class="btn-length-opt relative flex items-center justify-between p-3.5 rounded-xl border-2 transition-all font-medium text-sm border-red-500 bg-red-50/30 text-red-600">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="type" class="w-4 h-4 text-red-500"></i>
+                    <span>Tên 3 chữ</span>
+                  </div>
+                  <i data-lucide="check-circle-2" class="w-5 h-5 opacity-100 text-red-600 transition-opacity check-icon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Batch Count Option -->
+            <div>
+              <label for="batch-count" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                Số lượng tên muốn tạo / lần
+              </label>
+              <input type="number" id="batch-count" min="1" max="100" value="5" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-slate-800 text-sm font-medium">
+            </div>
+
+            <!-- Anti Duplication Rules -->
+            <div class="pt-2 border-t border-slate-100">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-600">Chống trùng lặp tuyệt đối với lịch sử</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+                  Đã bật
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div id="word-list-container" class="mt-4 border-t border-slate-100 pt-3">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Danh Sách Từ Đã Xử Lý Dọc (<span id="parsed-count" class="text-red-600 font-bold">0</span> từ):</span>
-            <button id="btn-toggle-words" class="text-xs text-red-600 hover:underline font-medium">Ẩn/Hiện danh sách</button>
-          </div>
-          <div id="word-preview-box" class="max-h-36 overflow-y-auto bg-slate-100 p-2.5 rounded-lg text-xs font-mono text-slate-700 flex flex-wrap gap-1.5 border border-slate-200">
+        <!-- Action Buttons -->
+        <div class="space-y-3">
+          <button id="btn-generate-once" class="w-full py-4 px-6 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold text-base shadow-lg shadow-red-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Đặt tên ngẫu nhiên
+          </button>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btn-auto-start" class="py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <i data-lucide="play-circle" class="w-4 h-4 text-emerald-400"></i>
+              Auto Vô hạn
+            </button>
+            <button id="btn-auto-stop" disabled class="py-3 px-4 rounded-xl bg-slate-200 text-slate-400 font-medium text-sm cursor-not-allowed transition-all flex items-center justify-center gap-2">
+              <i data-lucide="stop-circle" class="w-4 h-4"></i>
+              Dừng lại
+            </button>
           </div>
         </div>
+
       </div>
 
-      <!-- STEP 2: Options -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div id="option-header" class="p-5 flex items-center justify-between cursor-pointer select-none bg-white hover:bg-slate-50 transition-colors">
-          <div class="flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-sm font-bold">2</span>
-            <h2 class="text-base font-semibold text-slate-900">Tùy Chọn Đặt Tên</h2>
-          </div>
-          <button id="btn-toggle-option" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all">
-            <i class="fa-solid fa-chevron-down text-sm transition-transform duration-300" id="icon-chevron"></i>
-          </button>
-        </div>
+      <!-- RIGHT COLUMN: RESULTS & HISTORY -->
+      <div class="lg:col-span-7 space-y-6">
 
-        <div id="option-content" class="p-5 border-t border-slate-100 space-y-5">
+        <!-- Latest Generated Results -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative min-h-[220px] flex flex-col justify-between">
           <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Độ dài tên mong muốn:</label>
-            <div class="grid grid-cols-2 gap-3">
-              <button type="button" id="opt-2-words" onclick="selectLength(2)" class="name-length-btn flex items-center justify-between px-4 py-3 border-2 rounded-xl border-slate-200 bg-white hover:border-slate-300 font-medium text-slate-700 transition-all active-option">
-                <span class="flex items-center gap-2">
-                  <i class="fa-solid fa-font text-base"></i>
-                  <span>Đặt tên 2 chữ</span>
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2">
+                <h2 class="font-semibold text-slate-900 text-base">Kết quả vừa tạo</h2>
+                <span id="auto-indicator" class="hidden items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                  <span class="w-2 h-2 rounded-full bg-red-600 pulse-ring"></span>
+                  Đang chạy Auto...
                 </span>
-                <i class="fa-solid fa-circle-check text-red-600 text-lg check-icon"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="btn-copy-latest" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  Sao chép tất cả
+                </button>
+              </div>
+            </div>
+
+            <div id="latest-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
+              <!-- Default empty state -->
+              <div class="col-span-full py-8 text-center text-slate-400">
+                <i data-lucide="sparkles" class="w-10 h-10 mx-auto mb-2 opacity-30"></i>
+                <p class="text-sm">Nhấn "Đặt tên ngẫu nhiên" hoặc chạy "Auto" để tạo tên mới</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Session Stats Footer -->
+          <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs text-slate-500">
+            <div>Độ dài: <strong id="info-words-per-name" class="text-slate-800">3 từ</strong></div>
+            <div>Trùng đã loại: <strong id="info-duplicates-filtered" class="text-amber-600">0</strong></div>
+            <div>Cập nhật: <strong id="info-last-time" class="text-slate-800">--:--:--</strong></div>
+          </div>
+        </div>
+
+        <!-- Full History Section -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[520px]">
+          <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
+            <div class="flex items-center gap-2">
+              <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
+              <h2 class="font-semibold text-slate-900 text-base">Lịch sử tên đã tạo</h2>
+              <span id="history-counter" class="bg-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="flex items-center gap-2">
+              <div class="relative group">
+                <button class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  Xuất dữ liệu
+                  <i data-lucide="chevron-down" class="w-3 h-3 opacity-70"></i>
+                </button>
+                <div class="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-200 py-1 hidden group-hover:block z-30">
+                  <button id="btn-export-excel" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Trang tính (.CSV)
+                  </button>
+                  <button id="btn-export-pdf" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4 text-red-600"></i> Tài liệu (.PDF)
+                  </button>
+                  <button id="btn-export-txt" class="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                    <i data-lucide="file-code" class="w-4 h-4 text-blue-600"></i> Tệp văn bản (.TXT)
+                  </button>
+                </div>
+              </div>
+
+              <button id="btn-clear-history" title="Xóa toàn bộ lịch sử" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
-
-              <button type="button" id="opt-3-words" onclick="selectLength(3)" class="name-length-btn flex items-center justify-between px-4 py-3 border-2 rounded-xl border-slate-200 bg-white hover:border-slate-300 font-medium text-slate-700 transition-all">
-                <span class="flex items-center gap-2">
-                  <i class="fa-solid fa-font-case text-base"></i>
-                  <span>Đặt tên 3 chữ</span>
-                </span>
-                <i class="fa-solid fa-circle-check text-red-600 text-lg check-icon hidden"></i>
-              </button>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Số lượng mỗi lần tạo:</label>
-              <input type="number" id="gen-count" value="5" min="1" max="100" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm">
+          <!-- History Table/List -->
+          <div class="flex-1 overflow-y-auto p-4 space-y-2" id="history-list-container">
+            <div class="h-full flex flex-col items-center justify-center text-slate-400">
+              <i data-lucide="inbox" class="w-10 h-10 mb-2 stroke-1"></i>
+              <p class="text-xs">Chưa có dữ liệu lịch sử</p>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tốc độ tự động (giây):</label>
-              <input type="number" id="auto-speed" value="1.5" step="0.5" min="0.5" max="10" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 3: Action Buttons -->
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button id="btn-generate" class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-red-200 hover:shadow-lg transition-all active:scale-95">
-            <i class="fa-solid fa-dice"></i>
-            <span>Đặt Tên Ngẫu Nhiên</span>
-          </button>
-
-          <button id="btn-auto" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-emerald-200 hover:shadow-lg transition-all active:scale-95">
-            <i class="fa-solid fa-rotate-right"></i>
-            <span>Auto Vô Hạn Lặp Lại</span>
-          </button>
-
-          <button id="btn-stop" disabled class="flex items-center justify-center gap-2 bg-slate-200 text-slate-400 font-semibold py-3 px-4 rounded-xl transition-all cursor-not-allowed">
-            <i class="fa-solid fa-circle-stop"></i>
-            <span>Dừng Lại</span>
-          </button>
-        </div>
-
-        <div id="status-bar" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
-          <span class="flex items-center gap-2 font-medium">
-            <i class="fa-solid fa-gear animate-spin text-amber-600"></i>
-            <span id="status-text">Đang xử lý & tạo tên...</span>
-          </span>
-          <span id="auto-badge" class="px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-bold text-[10px] uppercase tracking-wider hidden">Auto Mode</span>
-        </div>
-      </div>
-
-      <!-- Stats Card -->
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie text-red-500"></i> Thống Kê Hệ Thống
-        </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <span class="block text-2xl font-bold text-slate-800" id="stat-total-created">0</span>
-            <span class="text-[11px] font-medium text-slate-500">Tên đã tạo</span>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <span class="block text-2xl font-bold text-red-600" id="stat-duplicates-removed">0</span>
-            <span class="text-[11px] font-medium text-slate-500">Tên trùng loại bỏ</span>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <span class="block text-2xl font-bold text-amber-600" id="stat-invalid-removed">0</span>
-            <span class="text-[11px] font-medium text-slate-500">Tên không phù hợp</span>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <span class="block text-2xl font-bold text-emerald-600" id="stat-word-pool">0</span>
-            <span class="text-[11px] font-medium text-slate-500">Từ gốc hợp lệ</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT PANEL -->
-    <div class="lg:col-span-5 space-y-6">
-
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[620px]">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-list-check text-red-600"></i>
-            <h2 class="text-base font-semibold text-slate-900">Lịch Sử Tên Đã Tạo</h2>
-          </div>
-          <span class="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold" id="badge-history-count">0 tên</span>
-        </div>
-
-        <div class="p-3 bg-white border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <button id="btn-copy-all" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors">
-              <i class="fa-regular fa-copy text-red-600"></i>
-              <span>Sao chép tất cả</span>
-            </button>
-            <button id="btn-clear-history" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-colors">
-              <i class="fa-solid fa-trash-can"></i>
-              <span>Xóa lịch sử</span>
-            </button>
-          </div>
-        </div>
-
-        <div id="results-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/30">
-          <div id="empty-state" class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
-            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 text-2xl mb-3">
-              <i class="fa-solid fa-folder-open"></i>
-            </div>
-            <p class="text-sm font-medium text-slate-600">Đang khởi tạo tên...</p>
-          </div>
-        </div>
-
-        <div class="p-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl space-y-2">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Xuất toàn bộ danh sách tệp:</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button id="btn-export-txt" class="flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-2.5 rounded-lg transition-colors shadow-sm">
-              <i class="fa-solid fa-file-lines text-blue-500"></i>
-              <span>Xuất TXT</span>
-            </button>
-            <button id="btn-export-sheet" class="flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-2.5 rounded-lg transition-colors shadow-sm">
-              <i class="fa-solid fa-file-excel text-emerald-600"></i>
-              <span>Trang tính</span>
-            </button>
-            <button id="btn-export-pdf" class="flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium py-2 px-2.5 rounded-lg transition-colors shadow-sm">
-              <i class="fa-solid fa-file-pdf text-red-500"></i>
-              <span>Xuất PDF</span>
-            </button>
           </div>
         </div>
 
       </div>
 
     </div>
-
   </main>
 
-  <!-- PDF Export Template -->
-  <div class="hidden">
-    <div id="pdf-export-template" class="p-8 bg-white font-sans text-slate-800">
-      <div class="border-b-2 border-red-600 pb-4 mb-6 flex justify-between items-center">
-        <div>
-          <h1 class="text-2xl font-bold text-slate-900">BÁO CÁO DANH SÁCH TÊN ĐÃ TẠO</h1>
-          <p class="text-xs text-slate-500 mt-1">Xuất từ Hệ Thống Đặt Tên Ngẫu Nhiên Thông Minh</p>
-        </div>
-        <div class="text-right text-xs text-slate-500" id="pdf-time-stamp">
-          Ngày xuất: --/--/----
-        </div>
+  <!-- Modal View Words List -->
+  <div id="modal-words" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 flex flex-col max-h-[80vh]">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="list-checks" class="w-5 h-5 text-red-500"></i>
+          Danh Sách Từ Vựng Đã Tách
+        </h3>
+        <button id="btn-close-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
-
-      <div class="grid grid-cols-4 gap-4 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 text-center">
-        <div>
-          <span class="block text-xs text-slate-500">Tổng Số Tên:</span>
-          <span class="text-lg font-bold text-slate-800" id="pdf-stat-total">0</span>
-        </div>
-        <div>
-          <span class="block text-xs text-slate-500">Số Tên Trùng Loại Bỏ:</span>
-          <span class="text-lg font-bold text-red-600" id="pdf-stat-dup">0</span>
-        </div>
-        <div>
-          <span class="block text-xs text-slate-500">Tên Không Phù Hợp:</span>
-          <span class="text-lg font-bold text-amber-600" id="pdf-stat-invalid">0</span>
-        </div>
-        <div>
-          <span class="block text-xs text-slate-500">Độ Dài Tên:</span>
-          <span class="text-lg font-bold text-blue-600" id="pdf-stat-length">--</span>
-        </div>
+      <p class="text-xs text-slate-500 mb-3">Tất cả khoảng trắng/dữ liệu ngang đã được chuẩn hóa hàng dọc & loại bỏ trùng lặp.</p>
+      <div id="words-grid" class="flex-1 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-700 font-mono">
+        <!-- Words injected here -->
       </div>
-
-      <table class="w-full text-left text-xs border-collapse">
-        <thead>
-          <tr class="bg-slate-100 border-b border-slate-300">
-            <th class="py-2.5 px-3 font-semibold text-slate-700 w-12">STT</th>
-            <th class="py-2.5 px-3 font-semibold text-slate-700">Tên Được Tạo</th>
-            <th class="py-2.5 px-3 font-semibold text-slate-700 w-24 text-center">Số Chữ</th>
-            <th class="py-2.5 px-3 font-semibold text-slate-700 w-48 text-right">Thời Gian Tạo</th>
-          </tr>
-        </thead>
-        <tbody id="pdf-table-body" class="divide-y divide-slate-200">
-        </tbody>
-      </table>
+      <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+        <button id="btn-close-modal-2" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800">
+          Đóng
+        </button>
+      </div>
     </div>
   </div>
 
-  <script>
-    const state = {
-      wordPool: ["Bình", "An", "Minh", "Quang", "Đức", "Trí", "Thành", "Bảo", "Hùng", "Sơn", "Hải", "Tuấn", "Hoàng", "Phúc", "Lâm", "Khánh", "Việt", "Nam", "Khang", "Huy"],
-      createdHistory: [],
-      selectedLength: 2,
-      isAutoRunning: false,
-      autoIntervalId: null,
-      totalDuplicatesRemoved: 0,
-      totalInvalidRemoved: 0
-    };
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+      NameGenerator Pro &copy; 2026 - Công cụ đặt tên ngẫu nhiên chuẩn hóa chuyên nghiệp.
+    </div>
+  </footer>
 
+  <!-- App Logic Script -->
+  <script>
+    // --- Application State ---
+    const defaultWords = [
+      "Nguyện", "Bảo", "Minh", "Quang", "Anh", "Đức", "Trần", "Lê", "Nguyễn", "Phạm",
+      "Hoàng", "Huỳnh", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương",
+      "Thái", "Sơn", "Hà", "Phong", "Long", "Chí", "Hải", "Tuấn", "Khang", "Thành",
+      "Dũng", "Nam", "Việt", "Phương", "Khánh", "Nhật", "Huy", "Hùng", "Tâm", "Kiên"
+    ];
+
+    let wordPool = [...defaultWords];
+    let generatedHistory = []; // Array of objects { id, name, wordCount, timestamp }
+    let selectedLength = 3; // Default 3 words
+    let autoInterval = null;
+    let autoDuplicatesFilteredCount = 0;
+
+    // --- DOM Elements ---
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
-    const fileLoading = document.getElementById('file-loading');
-    const wordListContainer = document.getElementById('word-list-container');
-    const wordPreviewBox = document.getElementById('word-preview-box');
-    const parsedCountSpan = document.getElementById('parsed-count');
-    const btnToggleWords = document.getElementById('btn-toggle-words');
+    const fileSummary = document.getElementById('file-summary');
+    const fileNameEl = document.getElementById('file-name');
+    const fileSizeEl = document.getElementById('file-size');
+    const statWordsEl = document.getElementById('stat-words');
+    const statDuplicatesEl = document.getElementById('stat-duplicates');
 
-    const optionHeader = document.getElementById('option-header');
-    const optionContent = document.getElementById('option-content');
-    const iconChevron = document.getElementById('icon-chevron');
+    const btnToggleOptions = document.getElementById('btn-toggle-options');
+    const optionsHeader = document.getElementById('options-header');
+    const optionsBody = document.getElementById('options-body');
+    const iconOptionsToggle = document.getElementById('icon-options-toggle');
 
-    const opt2Words = document.getElementById('opt-2-words');
-    const opt3Words = document.getElementById('opt-3-words');
+    const btnLengthOpts = document.querySelectorAll('.btn-length-opt');
+    const batchCountInput = document.getElementById('batch-count');
 
-    const btnGenerate = document.getElementById('btn-generate');
-    const btnAuto = document.getElementById('btn-auto');
-    const btnStop = document.getElementById('btn-stop');
-    const statusBar = document.getElementById('status-bar');
-    const statusText = document.getElementById('status-text');
-    const autoBadge = document.getElementById('auto-badge');
+    const btnGenerateOnce = document.getElementById('btn-generate-once');
+    const btnAutoStart = document.getElementById('btn-auto-start');
+    const btnAutoStop = document.getElementById('btn-auto-stop');
+    const autoIndicator = document.getElementById('auto-indicator');
 
-    const resultsList = document.getElementById('results-list');
-    const emptyState = document.getElementById('empty-state');
-    const badgeHistoryCount = document.getElementById('badge-history-count');
+    const latestContainer = document.getElementById('latest-container');
+    const historyListContainer = document.getElementById('history-list-container');
+    const historyCounter = document.getElementById('history-counter');
 
-    const statTotalCreated = document.getElementById('stat-total-created');
-    const statDuplicatesRemoved = document.getElementById('stat-duplicates-removed');
-    const statInvalidRemoved = document.getElementById('stat-invalid-removed');
-    const statWordPool = document.getElementById('stat-word-pool');
+    const infoWordsPerName = document.getElementById('info-words-per-name');
+    const infoDuplicatesFiltered = document.getElementById('info-duplicates-filtered');
+    const infoLastTime = document.getElementById('info-last-time');
 
-    const btnCopyAll = document.getElementById('btn-copy-all');
+    const btnCopyLatest = document.getElementById('btn-copy-latest');
     const btnClearHistory = document.getElementById('btn-clear-history');
-    const btnExportTxt = document.getElementById('btn-export-txt');
-    const btnExportSheet = document.getElementById('btn-export-sheet');
+    const btnViewWords = document.getElementById('btn-view-words');
+
+    const modalWords = document.getElementById('modal-words');
+    const wordsGrid = document.getElementById('words-grid');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const btnCloseModal2 = document.getElementById('btn-close-modal-2');
+
+    const btnExportExcel = document.getElementById('btn-export-excel');
     const btnExportPdf = document.getElementById('btn-export-pdf');
+    const btnExportTxt = document.getElementById('btn-export-txt');
 
-    window.addEventListener('DOMContentLoaded', () => {
-      renderWordPool();
+    // --- Toast System ---
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      const toastIcon = document.getElementById('toast-icon');
 
-      // AUTO GENERATE 5 INITIAL NAMES UPON PAGE LOAD
-      generateNamesOnce();
+      toastMsg.innerText = msg;
+      
+      if (type === 'success') {
+        toastIcon.setAttribute('data-lucide', 'check-circle-2');
+        toastIcon.className = 'w-5 h-5 text-emerald-400';
+      } else if (type === 'error') {
+        toastIcon.setAttribute('data-lucide', 'alert-circle');
+        toastIcon.className = 'w-5 h-5 text-red-400';
+      } else {
+        toastIcon.setAttribute('data-lucide', 'info');
+        toastIcon.className = 'w-5 h-5 text-blue-400';
+      }
+      lucide.createIcons();
 
-      ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          dropZone.classList.add('border-red-500', 'bg-red-50/30');
-        }, false);
-      });
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
 
-      ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          dropZone.classList.remove('border-red-500', 'bg-red-50/30');
-        }, false);
-      });
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
 
-      dropZone.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        if (files.length) handleFileUpload(files[0]);
-      });
+    // --- Lucide Icons Reload ---
+    function initIcons() {
+      lucide.createIcons();
+    }
 
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length) handleFileUpload(e.target.files[0]);
-      });
+    // --- File Processing ---
+    fileInput.addEventListener('change', handleFileSelect);
 
-      optionHeader.addEventListener('click', () => {
-        optionContent.classList.toggle('hidden');
-        iconChevron.classList.toggle('rotate-180');
-      });
-
-      btnToggleWords.addEventListener('click', () => {
-        wordPreviewBox.classList.toggle('hidden');
-      });
-
-      btnGenerate.addEventListener('click', () => generateNamesOnce());
-      btnAuto.addEventListener('click', startAutoLoop);
-      btnStop.addEventListener('click', stopAutoLoop);
-
-      btnCopyAll.addEventListener('click', copyAllToClipboard);
-      btnClearHistory.addEventListener('click', clearHistory);
-
-      btnExportTxt.addEventListener('click', exportToTXT);
-      btnExportSheet.addEventListener('click', exportToSheet);
-      btnExportPdf.addEventListener('click', exportToPDF);
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-red-500', 'bg-red-50/50');
+      }, false);
     });
 
-    async function handleFileUpload(file) {
-      const ext = file.name.split('.').pop().toLowerCase();
-      if (!['txt', 'pdf'].includes(ext)) {
-        showToast('Vui lòng chỉ tải lên tệp .TXT hoặc .PDF!', 'error');
-        return;
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-red-500', 'bg-red-50/50');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length) {
+        fileInput.files = files;
+        handleFileSelect();
       }
+    });
 
-      fileLoading.classList.remove('hidden');
+    async function handleFileSelect() {
+      const file = fileInput.files[0];
+      if (!file) return;
 
-      try {
-        let rawText = '';
-        if (ext === 'txt') {
-          rawText = await readTxtFile(file);
-        } else if (ext === 'pdf') {
-          rawText = await readPdfFile(file);
+      fileNameEl.innerText = file.name;
+      fileSizeEl.innerText = (file.size / 1024).toFixed(1) + ' KB';
+
+      let textContent = '';
+
+      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        try {
+          showToast('Đang xử lý tệp PDF...', 'info');
+          textContent = await parsePDF(file);
+        } catch (err) {
+          showToast('Không thể đọc tệp PDF!', 'error');
+          console.error(err);
+          return;
         }
-
-        processRawTextToWords(rawText);
-        showToast(`Đã xử lý tệp ${file.name} thành công!`, 'success');
-      } catch (err) {
-        console.error(err);
-        showToast('Lỗi khi đọc tệp. Vui lòng kiểm tra lại!', 'error');
-      } finally {
-        fileLoading.classList.add('hidden');
+      } else {
+        // Plain text file
+        textContent = await file.text();
       }
+
+      processRawText(textContent);
     }
 
-    function readTxtFile(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsText(file, 'UTF-8');
-      });
-    }
-
-    async function readPdfFile(file) {
+    async function parsePDF(file) {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = '';
-
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
@@ -468,392 +477,414 @@
       return fullText;
     }
 
-    function processRawTextToWords(text) {
-      if (!text) return;
-      const cleaned = text.replace(/[,;\t\r\n]+/g, ' ');
-      const rawWords = cleaned.split(/\s+/);
+    function processRawText(rawText) {
+      // Automatic detection & vertical normalization:
+      // Replace non-word/Vietnamese chars with spaces, split by linebreaks, tabs, spaces, commas
+      const rawWords = rawText
+        .split(/[\r\n\t,;.\s]+/)
+        .map(w => w.trim())
+        .filter(w => w.length > 0 && !/^\d+$/.test(w)); // Filter out empty and pure numbers
 
-      const validWords = [];
+      const uniqueWords = [];
+      let duplicateCount = 0;
+
       const seen = new Set();
-
       rawWords.forEach(w => {
-        const cleanedWord = w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').trim();
-        if (cleanedWord.length > 0) {
-          const formatted = cleanedWord.charAt(0).toUpperCase() + cleanedWord.slice(1).toLowerCase();
-          if (!seen.has(formatted.toLowerCase())) {
-            seen.add(formatted.toLowerCase());
-            validWords.push(formatted);
-          }
+        const normalized = w.charAt(0).toUpperCase() + w.slice(1);
+        if (seen.has(normalized.toLowerCase())) {
+          duplicateCount++;
+        } else {
+          seen.add(normalized.toLowerCase());
+          uniqueWords.push(normalized);
         }
       });
 
-      if (validWords.length === 0) {
-        showToast('Không tìm thấy từ hợp lệ nào trong tệp!', 'warning');
+      if (uniqueWords.length < 5) {
+        showToast('Nguồn tệp cần ít nhất 5 từ hợp lệ!', 'error');
         return;
       }
 
-      state.wordPool = validWords;
-      renderWordPool();
+      wordPool = uniqueWords;
+      statWordsEl.innerText = wordPool.length;
+      statDuplicatesEl.innerText = duplicateCount;
+      fileSummary.classList.remove('hidden');
+
+      showToast(`Đã tải ${wordPool.length} từ vựng từ tệp!`, 'success');
     }
 
-    function renderWordPool() {
-      parsedCountSpan.textContent = state.wordPool.length;
-      statWordPool.textContent = state.wordPool.length;
-
-      wordPreviewBox.innerHTML = '';
-      state.wordPool.forEach(word => {
-        const badge = document.createElement('span');
-        badge.className = 'inline-block px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 shadow-2xs';
-        badge.textContent = word;
-        wordPreviewBox.appendChild(badge);
+    // --- View Word List Modal ---
+    btnViewWords.addEventListener('click', () => {
+      wordsGrid.innerHTML = '';
+      wordPool.forEach((word, idx) => {
+        const div = document.createElement('div');
+        div.className = 'p-2 bg-white rounded-lg border border-slate-200 shadow-2xs flex items-center gap-2';
+        div.innerHTML = `<span class="text-slate-400 text-[10px]">${idx + 1}.</span> <span class="font-medium text-slate-800">${word}</span>`;
+        wordsGrid.appendChild(div);
       });
+      modalWords.classList.remove('hidden');
+    });
+
+    [btnCloseModal, btnCloseModal2].forEach(btn => {
+      btn.addEventListener('click', () => modalWords.classList.add('hidden'));
+    });
+
+    // --- Options Toggle ---
+    function toggleOptions() {
+      optionsBody.classList.toggle('hidden');
+      iconOptionsToggle.classList.toggle('rotate-180');
+    }
+    optionsHeader.addEventListener('click', toggleOptions);
+
+    // --- Select Length Options ---
+    btnLengthOpts.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btnLengthOpts.forEach(b => {
+          b.classList.remove('border-red-500', 'bg-red-50/30', 'text-red-600');
+          b.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+          const checkIcon = b.querySelector('.check-icon');
+          if (checkIcon) checkIcon.classList.add('opacity-0');
+          const typeIcon = b.querySelector('[data-lucide="type"]');
+          if (typeIcon) typeIcon.classList.replace('text-red-500', 'text-slate-400');
+        });
+
+        btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+        btn.classList.add('border-red-500', 'bg-red-50/30', 'text-red-600');
+        const checkIcon = btn.querySelector('.check-icon');
+        if (checkIcon) checkIcon.classList.remove('opacity-0');
+        const typeIcon = btn.querySelector('[data-lucide="type"]');
+        if (typeIcon) typeIcon.classList.replace('text-slate-400', 'text-red-500');
+
+        selectedLength = parseInt(btn.getAttribute('data-length'));
+        infoWordsPerName.innerText = selectedLength + ' từ';
+      });
+    });
+
+    // --- Name Generator Core Logic ---
+    function getRandomWord() {
+      return wordPool[Math.floor(Math.random() * wordPool.length)];
     }
 
-    function selectLength(len) {
-      state.selectedLength = len;
-      const btn2Check = opt2Words.querySelector('.check-icon');
-      const btn3Check = opt3Words.querySelector('.check-icon');
-
-      if (len === 2) {
-        opt2Words.classList.add('active-option');
-        opt3Words.classList.remove('active-option');
-        btn2Check.classList.remove('hidden');
-        btn3Check.classList.add('hidden');
-      } else {
-        opt3Words.classList.add('active-option');
-        opt2Words.classList.remove('active-option');
-        btn3Check.classList.remove('hidden');
-        btn2Check.classList.add('hidden');
+    function generateSingleName(length) {
+      let parts = [];
+      for (let i = 0; i < length; i++) {
+        parts.push(getRandomWord());
       }
+      return parts.join(' ');
     }
 
-    function generateNamesOnce() {
-      if (state.wordPool.length < state.selectedLength) {
-        showToast(`Cần ít nhất ${state.selectedLength} từ gốc để đặt tên!`, 'warning');
-        return;
-      }
-
-      showStatus('Đang xử lý & tạo tên...');
-      const countInput = parseInt(document.getElementById('gen-count').value) || 5;
-      let newNamesCreated = 0;
-      let duplicatesInBatch = 0;
-      let invalidInBatch = 0;
-
-      const historySet = new Set(state.createdHistory.map(item => item.name.toLowerCase()));
-      let maxAttempts = countInput * 25;
+    function generateBatchNames() {
+      const count = parseInt(batchCountInput.value) || 5;
+      const historySet = new Set(generatedHistory.map(item => item.name.toLowerCase()));
+      let newBatch = [];
+      let duplicateFilteredInBatch = 0;
+      let maxAttempts = count * 50; // Safety guard
       let attempts = 0;
 
-      while (newNamesCreated < countInput && attempts < maxAttempts) {
+      while (newBatch.length < count && attempts < maxAttempts) {
         attempts++;
-        const words = shuffleArray([...state.wordPool]).slice(0, state.selectedLength);
-        const nameCandidate = words.join(' ');
-
-        if (historySet.has(nameCandidate.toLowerCase())) {
-          duplicatesInBatch++;
-          state.totalDuplicatesRemoved++;
-          continue;
+        const candidate = generateSingleName(selectedLength);
+        
+        // Anti duplication check
+        if (historySet.has(candidate.toLowerCase()) || newBatch.includes(candidate)) {
+          duplicateFilteredInBatch++;
+          autoDuplicatesFilteredCount++;
+        } else {
+          newBatch.push(candidate);
         }
+      }
 
-        const uniqueInName = new Set(words.map(w => w.toLowerCase()));
-        if (uniqueInName.size < state.selectedLength) {
-          invalidInBatch++;
-          state.totalInvalidRemoved++;
-          continue;
-        }
+      if (newBatch.length === 0) {
+        showToast('Đã kiệt nguồn phối hợp tên mới! Vui lòng thêm từ vựng.', 'error');
+        stopAuto();
+        return [];
+      }
 
-        historySet.add(nameCandidate.toLowerCase());
-        const timestampStr = new Date().toLocaleTimeString('vi-VN', { hour12: false }) + '.' + String(new Date().getMilliseconds()).padStart(3, '0');
+      const now = new Date();
+      const timestampFormatted = now.toLocaleTimeString('vi-VN') + ' ' + now.toLocaleDateString('vi-VN');
 
-        const newItem = {
-          id: Date.now() + Math.random(),
-          name: nameCandidate,
-          wordCount: state.selectedLength,
-          timestamp: timestampStr
+      const createdItems = newBatch.map(name => {
+        const item = {
+          id: 'NAME-' + Math.random().toString(36).substr(2, 9),
+          name: name,
+          wordCount: selectedLength,
+          timestamp: timestampFormatted
         };
+        generatedHistory.unshift(item); // Add to history
+        return item;
+      });
 
-        state.createdHistory.unshift(newItem);
-        newNamesCreated++;
-      }
+      // Update Latest View
+      renderLatest(createdItems);
+      renderHistory();
 
-      updateUI();
-      hideStatus();
+      infoDuplicatesFiltered.innerText = autoDuplicatesFilteredCount;
+      infoLastTime.innerText = now.toLocaleTimeString('vi-VN');
 
-      if (newNamesCreated > 0) {
-        showToast(`Đã tạo thành công ${newNamesCreated} tên!`, 'success');
-      } else {
-        showToast('Tất cả tổ hợp tên đã bị trùng!', 'warning');
-      }
+      return createdItems;
     }
 
-    function startAutoLoop() {
-      if (state.isAutoRunning) return;
-      if (state.wordPool.length < state.selectedLength) {
-        showToast(`Cần ít nhất ${state.selectedLength} từ!`, 'warning');
-        return;
-      }
-
-      const speedSec = parseFloat(document.getElementById('auto-speed').value) || 1.5;
-      state.isAutoRunning = true;
-
-      btnAuto.disabled = true;
-      btnAuto.classList.add('opacity-50', 'cursor-not-allowed');
-      btnGenerate.disabled = true;
-      btnGenerate.classList.add('opacity-50', 'cursor-not-allowed');
-
-      btnStop.disabled = false;
-      btnStop.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
-      btnStop.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white', 'shadow-md', 'shadow-red-200');
-
-      autoBadge.classList.remove('hidden');
-      showStatus('Auto đang chạy liên tục...');
-
-      generateNamesOnce();
-      state.autoIntervalId = setInterval(() => {
-        if (!state.isAutoRunning) return;
-        generateNamesOnce();
-      }, speedSec * 1000);
-    }
-
-    function stopAutoLoop() {
-      if (!state.isAutoRunning) return;
-
-      state.isAutoRunning = false;
-      if (state.autoIntervalId) clearInterval(state.autoIntervalId);
-
-      btnAuto.disabled = false;
-      btnAuto.classList.remove('opacity-50', 'cursor-not-allowed');
-      btnGenerate.disabled = false;
-      btnGenerate.classList.remove('opacity-50', 'cursor-not-allowed');
-
-      btnStop.disabled = true;
-      btnStop.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
-      btnStop.classList.remove('bg-red-600', 'hover:bg-red-700', 'text-white', 'shadow-md', 'shadow-red-200');
-
-      autoBadge.classList.add('hidden');
-      hideStatus();
-      showToast('Đã dừng chế độ Auto!', 'info');
-    }
-
-    function updateUI() {
-      statTotalCreated.textContent = state.createdHistory.length;
-      statDuplicatesRemoved.textContent = state.totalDuplicatesRemoved;
-      statInvalidRemoved.textContent = state.totalInvalidRemoved;
-      badgeHistoryCount.textContent = `${state.createdHistory.length} tên`;
-
-      if (state.createdHistory.length === 0) {
-        emptyState.classList.remove('hidden');
-        resultsList.querySelectorAll('.name-card').forEach(el => el.remove());
-        return;
-      }
-
-      emptyState.classList.add('hidden');
-      resultsList.querySelectorAll('.name-card').forEach(el => el.remove());
-
-      state.createdHistory.forEach((item, index) => {
+    // --- Render Functions ---
+    function renderLatest(items) {
+      latestContainer.innerHTML = '';
+      items.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'name-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs hover:border-red-300 transition-all flex flex-col gap-2';
+        card.className = 'p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-red-300 hover:bg-red-50/20 transition-all';
         card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-mono font-bold text-slate-400">#${state.createdHistory.length - index}</span>
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-semibold bg-red-50 text-red-600 px-2 py-0.5 rounded-full border border-red-100">
-                ${item.wordCount} chữ
-              </span>
-              <span class="text-[10px] text-slate-400 font-mono">
-                <i class="fa-regular fa-clock mr-1"></i>${item.timestamp}
-              </span>
+          <div>
+            <div class="font-bold text-slate-900 text-base tracking-wide">${item.name}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${item.timestamp}</div>
+          </div>
+          <button onclick="copyToClipboard('${item.name}')" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-200 shadow-2xs transition-all" title="Sao chép tên">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
+        `;
+        latestContainer.appendChild(card);
+      });
+      initIcons();
+    }
+
+    function renderHistory() {
+      historyCounter.innerText = generatedHistory.length;
+
+      if (generatedHistory.length === 0) {
+        historyListContainer.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-slate-400">
+            <i data-lucide="inbox" class="w-10 h-10 mb-2 stroke-1"></i>
+            <p class="text-xs">Chưa có dữ liệu lịch sử</p>
+          </div>
+        `;
+        initIcons();
+        return;
+      }
+
+      historyListContainer.innerHTML = '';
+      generatedHistory.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'p-3 bg-white rounded-xl border border-slate-100 hover:border-slate-200 flex items-center justify-between text-xs transition-all shadow-2xs';
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 font-mono flex items-center justify-center text-[10px] font-semibold">${generatedHistory.length - index}</span>
+            <div>
+              <span class="font-semibold text-slate-800 text-sm">${item.name}</span>
+              <span class="ml-2 text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${item.wordCount} chữ</span>
             </div>
           </div>
-          <div class="flex items-center justify-between">
-            <h4 class="text-base font-bold text-slate-800 tracking-wide">${escapeHtml(item.name)}</h4>
-            <button onclick="copySingleName('${escapeHtml(item.name)}')" class="text-xs text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 p-1.5 rounded-lg border border-slate-100 transition-colors" title="Sao chép tên này">
-              <i class="fa-regular fa-copy"></i>
+          <div class="flex items-center gap-3">
+            <span class="text-slate-400 text-[11px] font-mono hidden sm:inline">${item.timestamp}</span>
+            <button onclick="copyToClipboard('${item.name}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-50 transition-colors" title="Sao chép">
+              <i data-lucide="copy" class="w-4 h-4"></i>
             </button>
           </div>
         `;
-        resultsList.appendChild(card);
+        historyListContainer.appendChild(row);
       });
+      initIcons();
     }
 
-    function showStatus(text) {
-      statusText.textContent = text;
-      statusBar.classList.remove('hidden');
-    }
-
-    function hideStatus() {
-      if (!state.isAutoRunning) {
-        statusBar.classList.add('hidden');
-      } else {
-        statusText.textContent = 'Auto đang chạy liên tục...';
+    // --- Copy Clipboard Helper ---
+    window.copyToClipboard = function(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Đã sao chép: "${text}"`, 'success');
+      } catch (err) {
+        showToast('Lỗi khi sao chép!', 'error');
       }
-    }
+      document.body.removeChild(textarea);
+    };
 
-    function copySingleName(name) {
-      copyToClipboardText(name);
-      showToast(`Đã sao chép: "${name}"`, 'success');
-    }
-
-    function copyAllToClipboard() {
-      if (state.createdHistory.length === 0) {
-        showToast('Lịch sử trống!', 'warning');
+    btnCopyLatest.addEventListener('click', () => {
+      const cards = latestContainer.querySelectorAll('.font-bold');
+      if (!cards.length) {
+        showToast('Không có tên nào để sao chép!', 'error');
         return;
       }
-      const allNames = state.createdHistory.map(item => item.name).join('\n');
-      copyToClipboardText(allNames);
-      showToast(`Đã sao chép toàn bộ ${state.createdHistory.length} tên!`, 'success');
-    }
+      const names = Array.from(cards).map(c => c.innerText).join('\n');
+      copyToClipboard(names);
+    });
 
-    function copyToClipboardText(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text);
-      } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
+    btnClearHistory.addEventListener('click', () => {
+      if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử đã tạo?')) {
+        generatedHistory = [];
+        autoDuplicatesFilteredCount = 0;
+        infoDuplicatesFiltered.innerText = '0';
+        renderHistory();
+        showToast('Đã xóa toàn bộ lịch sử!', 'info');
       }
+    });
+
+    // --- Button Event Handlers ---
+    btnGenerateOnce.addEventListener('click', () => {
+      generateBatchNames();
+      showToast('Đã tạo tên thành công!', 'success');
+    });
+
+    btnAutoStart.addEventListener('click', () => {
+      if (autoInterval) return;
+
+      btnAutoStart.disabled = true;
+      btnAutoStart.classList.add('opacity-50', 'cursor-not-allowed');
+
+      btnAutoStop.disabled = false;
+      btnAutoStop.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+      btnAutoStop.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white', 'shadow-md');
+
+      autoIndicator.classList.remove('hidden');
+      autoIndicator.classList.add('flex');
+
+      generateBatchNames();
+      autoInterval = setInterval(() => {
+        generateBatchNames();
+      }, 2000); // Generate every 2 seconds
+
+      showToast('Đã bắt đầu chế độ Auto vô hạn!', 'info');
+    });
+
+    function stopAuto() {
+      if (!autoInterval) return;
+      clearInterval(autoInterval);
+      autoInterval = null;
+
+      btnAutoStart.disabled = false;
+      btnAutoStart.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      btnAutoStop.disabled = true;
+      btnAutoStop.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+      btnAutoStop.classList.remove('bg-red-600', 'hover:bg-red-700', 'text-white', 'shadow-md');
+
+      autoIndicator.classList.add('hidden');
+      autoIndicator.classList.remove('flex');
+
+      showToast('Đã dừng chế độ Auto!', 'info');
     }
 
-    function clearHistory() {
-      if (state.createdHistory.length === 0) return;
-      if (confirm('Xóa sạch toàn bộ danh sách tên đã tạo?')) {
-        state.createdHistory = [];
-        state.totalDuplicatesRemoved = 0;
-        state.totalInvalidRemoved = 0;
-        updateUI();
-        showToast('Đã xóa sạch lịch sử!', 'info');
+    btnAutoStop.addEventListener('click', stopAuto);
+
+    // --- EXPORT FUNCTIONALITIES ---
+
+    // 1. Export Excel / CSV
+    btnExportExcel.addEventListener('click', () => {
+      if (generatedHistory.length === 0) {
+        showToast('Chưa có dữ liệu để xuất!', 'error');
+        return;
       }
-    }
+      let csvContent = "\uFEFF"; // UTF-8 BOM for correct Vietnamese display in Excel
+      csvContent += "STT,Tên Đã Tạo,Số Chữ,Thời Gian Tạo\n";
 
-    function exportToTXT() {
-      if (state.createdHistory.length === 0) return showToast('Chưa có tên để xuất!', 'warning');
-      let content = `=== DANH SÁCH TÊN ĐÃ TẠO ===\nThời gian: ${new Date().toLocaleString('vi-VN')}\nTổng số tên: ${state.createdHistory.length}\n===================================\n\n`;
-      state.createdHistory.forEach((item, i) => {
-        content += `${i + 1}. ${item.name} (${item.wordCount} chữ) - [${item.timestamp}]\n`;
-      });
-      downloadBlob(content, `Danh_Sach_Ten_${Date.now()}.txt`, 'text/plain;charset=utf-8');
-      showToast('Xuất TXT thành công!', 'success');
-    }
-
-    function exportToSheet() {
-      if (state.createdHistory.length === 0) return showToast('Chưa có tên để xuất!', 'warning');
-      let csvContent = "\uFEFFSTT,Tên Được Tạo,Số Chữ,Thời Gian Tạo\n";
-      state.createdHistory.forEach((item, i) => {
-        csvContent += `"${i + 1}","${item.name}","${item.wordCount}","${item.timestamp}"\n`;
-      });
-      downloadBlob(csvContent, `Trang_Tinh_Ten_${Date.now()}.csv`, 'text/csv;charset=utf-8');
-      showToast('Xuất Trang Tính CSV thành công!', 'success');
-    }
-
-    function exportToPDF() {
-      if (state.createdHistory.length === 0) return showToast('Chưa có tên để xuất!', 'warning');
-
-      document.getElementById('pdf-time-stamp').textContent = `Thời gian: ${new Date().toLocaleString('vi-VN')}`;
-      document.getElementById('pdf-stat-total').textContent = state.createdHistory.length;
-      document.getElementById('pdf-stat-dup').textContent = state.totalDuplicatesRemoved;
-      document.getElementById('pdf-stat-invalid').textContent = state.totalInvalidRemoved;
-      document.getElementById('pdf-stat-length').textContent = `${state.selectedLength} chữ`;
-
-      const tbody = document.getElementById('pdf-table-body');
-      tbody.innerHTML = '';
-
-      state.createdHistory.forEach((item, i) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="py-2 px-3 font-mono">${i + 1}</td>
-          <td class="py-2 px-3 font-bold">${escapeHtml(item.name)}</td>
-          <td class="py-2 px-3 text-center">${item.wordCount}</td>
-          <td class="py-2 px-3 text-right font-mono">${item.timestamp}</td>
-        `;
-        tbody.appendChild(tr);
+      generatedHistory.forEach((item, idx) => {
+        csvContent += `"${generatedHistory.length - idx}","${item.name}","${item.wordCount}","${item.timestamp}"\n`;
       });
 
-      const element = document.getElementById('pdf-export-template');
-      element.parentElement.classList.remove('hidden');
-
-      const opt = {
-        margin:       10,
-        filename:     `Danh_Sach_Ten_${Date.now()}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        element.parentElement.classList.add('hidden');
-        showToast('Xuất PDF thành công!', 'success');
-      }).catch(err => {
-        console.error(err);
-        element.parentElement.classList.add('hidden');
-        showToast('Lỗi khi tạo PDF!', 'error');
-      });
-    }
-
-    function downloadBlob(content, filename, contentType) {
-      const blob = new Blob([content], { type: contentType });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 100);
-    }
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Danh_Sach_Ten_Generator_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Đã xuất tệp Trang tính (.CSV)!', 'success');
+    });
 
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[array[i]]] = [array[array[i]], array[i]];
+    // 2. Export TXT
+    btnExportTxt.addEventListener('click', () => {
+      if (generatedHistory.length === 0) {
+        showToast('Chưa có dữ liệu để xuất!', 'error');
+        return;
       }
-      return array;
-    }
+      let txtContent = "=========================================\n";
+      txtContent += "DANH SÁCH TÊN TẠO NGẪU NHIÊN - NAMEGENERATOR\n";
+      txtContent += `Thời gian xuất: ${new Date().toLocaleString('vi-VN')}\n`;
+      txtContent += "=========================================\n\n";
 
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/ me>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      
-      let bgColors = 'bg-slate-800 text-white';
-      let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
-
-      if (type === 'success') {
-        bgColors = 'bg-emerald-900/90 text-emerald-100 border border-emerald-700';
-        icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-      } else if (type === 'error') {
-        bgColors = 'bg-red-900/90 text-red-100 border border-red-700';
-        icon = '<i class="fa-solid fa-triangle-exclamation text-red-400"></i>';
-      } else if (type === 'warning') {
-        bgColors = 'bg-amber-900/90 text-amber-100 border border-amber-700';
-        icon = '<i class="fa-solid fa-circle-exclamation text-amber-400"></i>';
-      }
-
-      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-medium transition-all duration-300 transform translate-y-2 opacity-0 ${bgColors}`;
-      toast.innerHTML = `${icon}<span>${escapeHtml(message)}</span>`;
-
-      container.appendChild(toast);
-
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
+      generatedHistory.forEach((item, idx) => {
+        txtContent += `${generatedHistory.length - idx}. ${item.name} (${item.wordCount} từ) - [${item.timestamp}]\n`;
       });
 
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
+      const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Danh_Sach_Ten_${Date.now()}.txt`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Đã xuất tệp Văn bản (.TXT)!', 'success');
+    });
+
+    // 3. Export PDF
+    btnExportPdf.addEventListener('click', () => {
+      if (generatedHistory.length === 0) {
+        showToast('Chưa có dữ liệu để xuất!', 'error');
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Danh Sách Tên Đặt Ngẫu Nhiên</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1e293b; }
+            h1 { text-align: center; color: #dc2626; margin-bottom: 5px; }
+            p.sub { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 25px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 13px; }
+            th { background-color: #f8fafc; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f1f5f9; }
+            .footer { margin-top: 30px; text-align: right; font-size: 11px; color: #94a3b8; }
+          </style>
+        </head>
+        <body>
+          <h1>DANH SÁCH TÊN TẠO NGẪU NHIÊN</h1>
+          <p class="sub">Xuất từ hệ thống NameGenerator Pro | Tổng số: ${generatedHistory.length} tên</p>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">STT</th>
+                <th>Họ & Tên</th>
+                <th style="width: 80px;">Số từ</th>
+                <th>Thời gian tạo</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      generatedHistory.forEach((item, idx) => {
+        html += `
+          <tr>
+            <td>${generatedHistory.length - idx}</td>
+            <td><strong>${item.name}</strong></td>
+            <td>${item.wordCount} chữ</td>
+            <td>${item.timestamp}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+          <div class="footer">Ngày xuất: ${new Date().toLocaleString('vi-VN')}</div>
+          <script>
+            window.onload = function() { window.print(); }
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+      showToast('Đang mở cửa sổ in/xuất PDF...', 'info');
+    });
+
+    // --- Initialize Page ---
+    window.addEventListener('load', () => {
+      initIcons();
+    });
   </script>
 </body>
 </html>
