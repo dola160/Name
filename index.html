@@ -3,683 +3,772 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Đặt Tên Thông Minh & Kiểm Tra Thực Tế</title>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <title>Hệ Thống Đặt Tên Ngẫu Nhiên Thông Minh AI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF.js for reading PDF files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- SheetJS for exporting Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF and AutoTable for exporting PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --primary-color: #dc2626; /* Màu đỏ làm điểm nhấn chính */
-            --bg-color: #ffffff;
-            --card-bg: #f8fafc;
-            --border-color: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .card {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Chế độ hoạt động & Tùy chọn */
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .radio-box {
-            position: relative;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #fff;
-        }
-
-        .radio-box input[type="radio"] {
-            display: none;
-        }
-
-        .radio-box-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        }
-
-        /* Trạng thái được chọn: Chữ đỏ + Icon tích đỏ */
-        .radio-box.selected {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            background-color: #fef2f2;
-        }
-
-        .radio-box.selected i.check-icon {
-            display: inline-block;
-            color: var(--primary-color);
-        }
-
-        .check-icon {
-            display: none;
-        }
-
-        /* Nút Thu gọn/Mở rộng */
-        .toggle-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
-
-        .collapsible-content {
-            max-height: 500px;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .collapsible-content.collapsed {
-            max-height: 0;
-        }
-
-        /* Nút Tạo tên nổi bật */
-        .btn-submit {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: background 0.2s;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
-        }
-
-        .btn-submit:hover {
-            background-color: #b91c1c;
-        }
-
-        /* Loading Spinner */
-        .loading-box {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: var(--text-muted);
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--primary-color);
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Kết quả */
-        .result-item {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 12px;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .name-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .status-badge {
-            font-size: 0.8rem;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
-        .badge-success { background: #dcfce7; color: #15803d; }
-        .badge-warning { background: #fef9c3; color: #a16207; }
-
-        .check-details {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .check-details div {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Lịch sử & Thao tác sao chép */
-        .action-btns {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-action {
+        ::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-main);
-            transition: all 0.2s;
         }
-
-        .btn-action:hover {
-            background: #e2e8f0;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-
-        .history-list {
-            max-height: 200px;
-            overflow-y: auto;
-            list-style: none;
-        }
-
-        .history-item {
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Responsive UI */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .options-grid { grid-template-columns: 1fr; }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body>
+<body class="bg-white text-slate-800 min-h-screen flex flex-col">
 
-<div class="container">
-    <header>
-        <h1><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary-color);"></i> Đặt Tên Ngẫu Nhiên & Kiểm Tra Thực Tế</h1>
-        <p>Hệ thống tự động quét trùng lặp tìm kiếm, tên miền & công ty thực tế</p>
+    <!-- Header -->
+    <header class="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-sky-50 rounded-lg text-sky-600">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 leading-tight">Hệ Thống Đặt Tên AI</h1>
+                    <p class="text-xs text-slate-500">Tạo tên ngẫu nhiên & Tự động kết hợp thông minh</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="aiStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Sẵn sàng xử lý
+                </span>
+            </div>
+        </div>
     </header>
 
-    <!-- Khung Tùy Chọn -->
-    <div class="card">
-        <button class="toggle-btn" id="toggleOptionsBtn">
-            <i class="fa-solid fa-sliders"></i> <span id="toggleText">Thu gọn tùy chọn</span>
-            <i class="fa-solid fa-chevron-up" id="toggleIcon"></i>
-        </button>
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <div class="collapsible-content" id="optionsContent">
-            <!-- 1. Chế độ hoạt động -->
-            <div class="section-title">
-                <i class="fa-solid fa-gauge-high"></i> Chế độ hoạt động
-            </div>
-            <div class="options-grid">
-                <label class="radio-box selected">
-                    <div class="radio-box-content">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <input type="radio" name="mode" value="normal" checked>
-                        <span>Bình thường</span>
-                    </div>
-                    <i class="fa-solid fa-circle-check check-icon"></i>
-                </label>
-
-                <label class="radio-box">
-                    <div class="radio-box-content">
-                        <i class="fa-solid fa-bolt"></i>
-                        <input type="radio" name="mode" value="fast">
-                        <span>Nhanh</span>
-                    </div>
-                    <i class="fa-solid fa-circle-check check-icon"></i>
-                </label>
-
-                <label class="radio-box">
-                    <div class="radio-box-content">
-                        <i class="fa-solid fa-forward-fast"></i>
-                        <input type="radio" name="mode" value="super_fast">
-                        <span>Siêu Nhanh</span>
-                    </div>
-                    <i class="fa-solid fa-circle-check check-icon"></i>
-                </label>
-            </div>
-
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
-
-            <!-- 2. Độ dài tên -->
-            <div class="section-title">
-                <i class="fa-solid fa-text-width"></i> Độ dài tên
-            </div>
-            <div class="options-grid">
-                <label class="radio-box selected">
-                    <div class="radio-box-content">
-                        <i class="fa-solid fa-font"></i>
-                        <input type="radio" name="length" value="2" checked>
-                        <span>Đặt tên 2 chữ</span>
-                    </div>
-                    <i class="fa-solid fa-circle-check check-icon"></i>
-                </label>
-
-                <label class="radio-box">
-                    <div class="radio-box-content">
-                        <i class="fa-solid fa-font"></i>
-                        <input type="radio" name="length" value="3">
-                        <span>Đặt tên 3 chữ</span>
-                    </div>
-                    <i class="fa-solid fa-circle-check check-icon"></i>
-                </label>
-            </div>
-        </div>
-
-        <!-- Nút Đặt Tên -->
-        <button class="btn-submit" id="generateBtn" style="margin-top: 15px;">
-            <i class="fa-solid fa-dice"></i> Auto đặt tên ngẫu nhiên
-        </button>
-    </div>
-
-    <!-- Hiệu ứng Tải -->
-    <div class="loading-box" id="loadingBox">
-        <div class="spinner"></div>
-        <div id="loadingText">Đang quét dữ liệu thực tế và tạo tên...</div>
-    </div>
-
-    <!-- Khung Kết Quả -->
-    <div class="card" id="resultCard" style="display: none;">
-        <div class="section-title" style="justify-content: space-between;">
-            <span><i class="fa-solid fa-square-poll-vertical"></i> Kết quả tạo tên</span>
-            <button class="btn-action" id="copyAllBtn">
-                <i class="fa-solid fa-copy"></i> Sao chép tất cả
-            </button>
-        </div>
-        <div id="resultsContainer"></div>
-    </div>
-
-    <!-- Khung Lịch Sử -->
-    <div class="card">
-        <div class="section-title" style="justify-content: space-between;">
-            <span><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử tên đã tạo</span>
-            <button class="btn-action" id="clearHistoryBtn" style="color: #ef4444;">
-                <i class="fa-solid fa-trash"></i> Xóa
-            </button>
-        </div>
-        <ul class="history-list" id="historyList">
-            <li class="history-item" style="color: var(--text-muted);">Chưa có lịch sử tạo tên nào.</li>
-        </ul>
-    </div>
-</div>
-
-<script>
-    /* ================= DỮ LIỆU TỰ NHIÊN HỆ THỐNG AI (VIỆT NAM) ================= */
-    const firstWords = ["Thiên", "Minh", "Bảo", "Hoàng", "An", "Phúc", "Đăng", "Khánh", "Gia", "Hải", "Nhật", "Thái", "Sơn", "Tùng", "Nguyên"];
-    const secondWords = ["Thành", "Long", "Phong", "Nam", "Khang", "Huy", "Duy", "Lâm", "Việt", "Khoa", "Vũ", "Sơn", "Hải", "Nhiên", "Thịnh"];
-    const thirdWords = ["Phát", "Tín", "Đạt", "Sáng", "Dương", "Tâm", "Đức", "Cường", "Trí", "Nghĩa", "Nhiên", "Vinh", "Hiếu"];
-
-    let nameHistory = JSON.parse(localStorage.getItem('generated_name_history')) || [];
-
-    /* ================= XỬ LÝ GIAO DIỆN RADIO BUTTONS ================= */
-    document.querySelectorAll('.radio-box').forEach(box => {
-        box.addEventListener('click', function() {
-            const input = this.querySelector('input[type="radio"]');
-            const name = input.getAttribute('name');
+        <!-- Left Column: Controls & Configuration (5 cols) -->
+        <div class="lg:col-span-5 space-y-5">
             
-            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
-                radio.closest('.radio-box').classList.remove('selected');
-            });
-            
-            this.classList.add('selected');
-            input.checked = true;
+            <!-- File Upload Section -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
+                    <i data-lucide="file-up" class="w-4 h-4 text-sky-600"></i>
+                    1. Tải Lên Dữ Liệu Nguồn (.TXT, .PDF)
+                </h2>
+                
+                <div id="dropZone" class="border-2 border-dashed border-slate-200 rounded-lg p-5 text-center hover:border-sky-500 transition-colors cursor-pointer bg-slate-50/50">
+                    <input type="file" id="fileInput" accept=".txt,.pdf" class="hidden">
+                    <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                    <p class="text-xs text-slate-600 font-medium">Nhấp để chọn tệp hoặc kéo thả vào đây</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Đọc dữ liệu theo từng dòng dọc</p>
+                </div>
+
+                <!-- File Info display -->
+                <div id="fileInfo" class="hidden mt-3 p-3 bg-sky-50 rounded-lg border border-sky-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i data-lucide="file-text" class="w-4 h-4 text-sky-600 shrink-0"></i>
+                        <span id="fileName" class="text-xs font-medium text-slate-800 truncate">data.txt</span>
+                    </div>
+                    <span id="lineCount" class="text-xs bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full font-bold shrink-0">0 dòng</span>
+                </div>
+            </div>
+
+            <!-- Configuration Options Accordion -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <button id="toggleConfigBtn" class="w-full p-4 flex items-center justify-between text-left bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                    <span class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-sky-600"></i>
+                        2. Tùy Chọn Đặt Tên
+                    </span>
+                    <i id="accordionIcon" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200"></i>
+                </button>
+                
+                <div id="configContent" class="p-5 border-t border-slate-100 space-y-4">
+                    <label class="block text-xs font-medium text-slate-700 mb-2">Chọn độ dài tên cần tạo:</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Option 2 Words -->
+                        <button type="button" id="opt2Words" onclick="selectWordLength(2)" 
+                                class="word-len-btn flex items-center justify-between p-3 border rounded-lg text-xs font-semibold transition-all duration-150 bg-white border-slate-200 text-slate-700 hover:border-slate-300">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="type" class="w-4 h-4"></i>
+                                Đặt tên 2 chữ
+                            </span>
+                            <i data-lucide="check-circle-2" class="check-icon w-4 h-4 hidden text-red-600"></i>
+                        </button>
+
+                        <!-- Option 3 Words -->
+                        <button type="button" id="opt3Words" onclick="selectWordLength(3)" 
+                                class="word-len-btn flex items-center justify-between p-3 border rounded-lg text-xs font-semibold transition-all duration-150 bg-white border-slate-200 text-slate-700 hover:border-slate-300">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="type" class="w-4 h-4"></i>
+                                Đặt tên 3 chữ
+                            </span>
+                            <i data-lucide="check-circle-2" class="check-icon w-4 h-4 hidden text-red-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+                <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-2">
+                    <i data-lucide="play-circle" class="w-4 h-4 text-sky-600"></i>
+                    3. Bắt Đầu Thực Hiện
+                </h2>
+
+                <button id="btnGenerateOnce" onclick="generateNames(1)" 
+                        class="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50">
+                    <i data-lucide="dices" class="w-4 h-4"></i>
+                    Đặt tên ngẫu nhiên (1 lần)
+                </button>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btnAutoStart" onclick="startAutoLoop()" 
+                            class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50">
+                        <i data-lucide="repeat" class="w-4 h-4"></i>
+                        Auto Vô hạn lặp
+                    </button>
+
+                    <button id="btnAutoStop" onclick="stopAutoLoop()" disabled 
+                            class="py-2.5 px-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm opacity-50 cursor-not-allowed">
+                        <i data-lucide="square" class="w-4 h-4"></i>
+                        Dừng lại
+                    </button>
+                </div>
+
+                <!-- Processing status indicator -->
+                <div id="statusBox" class="hidden p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2 animate-pulse">
+                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-amber-600"></i>
+                    <span id="statusText">Đang xử lý & tạo tên...</span>
+                </div>
+            </div>
+
+            <!-- File Export Card -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
+                    <i data-lucide="download" class="w-4 h-4 text-sky-600"></i>
+                    4. Xuất Danh Sách Kết Quả
+                </h2>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="exportData('excel')" class="flex flex-col items-center justify-center p-2.5 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg text-slate-700 transition-all text-xs gap-1 group">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">Trang tính</span>
+                    </button>
+                    <button onclick="exportData('pdf')" class="flex flex-col items-center justify-center p-2.5 border border-slate-200 hover:border-rose-500 hover:bg-rose-50 rounded-lg text-slate-700 transition-all text-xs gap-1 group">
+                        <i data-lucide="file-text" class="w-5 h-5 text-rose-600 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">Tệp PDF</span>
+                    </button>
+                    <button onclick="exportData('txt')" class="flex flex-col items-center justify-center p-2.5 border border-slate-200 hover:border-sky-500 hover:bg-sky-50 rounded-lg text-slate-700 transition-all text-xs gap-1 group">
+                        <i data-lucide="file-code" class="w-5 h-5 text-sky-600 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">Tệp TXT</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: History & Generated Names Display (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col h-full min-h-[500px]">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden">
+                
+                <!-- History Header -->
+                <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-sky-600"></i>
+                        <h2 class="text-sm font-semibold text-slate-900">Lịch Sử Tên Đã Tạo</h2>
+                        <span id="totalCountBadge" class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">0</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="copyAllResults()" class="inline-flex items-center gap-1 px-3 py-1.5 border border-slate-300 hover:bg-slate-100 rounded-md text-xs font-medium text-slate-700 transition-colors shadow-sm">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            Sao chép tất cả
+                        </button>
+                        <button onclick="clearHistory()" class="inline-flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 hover:bg-red-50 hover:text-red-600 rounded-md text-xs font-medium text-slate-500 transition-colors">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            Xóa lịch sử
+                        </button>
+                    </div>
+                </div>
+
+                <!-- History Table Area -->
+                <div class="flex-1 overflow-y-auto p-0 relative">
+                    <table class="w-full text-left text-xs text-slate-700 border-collapse">
+                        <thead class="bg-slate-100/70 text-slate-600 uppercase font-semibold text-[10px] tracking-wider sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="p-3 w-12 text-center">STT</th>
+                                <th class="p-3">Tên được tạo</th>
+                                <th class="p-3 w-20 text-center">Số từ</th>
+                                <th class="p-3 w-36">Thời gian</th>
+                                <th class="p-3 w-20 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                            <!-- Empty state default -->
+                            <tr id="emptyRow">
+                                <td colspan="5" class="p-12 text-center text-slate-400">
+                                    <i data-lucide="sparkles" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                                    <p class="text-xs">Chưa có tên nào được tạo.</p>
+                                    <p class="text-[11px] text-slate-400">Tải lên tệp hoặc bấm nút "Đặt tên ngẫu nhiên" để bắt đầu.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Summary Info -->
+                <div class="p-3 bg-slate-50 border-t border-slate-200 text-slate-500 text-[11px] flex justify-between items-center">
+                    <span>Hệ thống tự động chống trùng lặp dữ liệu tuyệt đối.</span>
+                    <span id="dupCheckInfo" class="font-medium text-sky-600">Chống trùng: Đang bật</span>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-xl text-xs flex items-center gap-2 pointer-events-none">
+        <i id="toastIcon" data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toastMsg">Thông báo</span>
+    </div>
+
+    <!-- MAIN APP SCRIPT -->
+    <script>
+        // Global State variables
+        const apiKey = ""; // Runtime automatically injected
+        let sourceWords = [];
+        let generatedHistory = new Set(); // Duplication check
+        let historyList = []; // Array of objects {id, name, wordCount, timestamp}
+        let selectedWordLength = 2; // Default 2 words
+        let isAutoLooping = false;
+        let autoLoopTimer = null;
+
+        // Initialize UI on DOM Ready
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            selectWordLength(2); // Set default active option
+            setupAccordion();
+            setupFileUpload();
         });
-    });
 
-    /* ================= THU GỌN / MỞ RỘNG TỦY CHỌN ================= */
-    const toggleBtn = document.getElementById('toggleOptionsBtn');
-    const optionsContent = document.getElementById('optionsContent');
-    const toggleText = document.getElementById('toggleText');
-    const toggleIcon = document.getElementById('toggleIcon');
+        // -------------------------------------------------------------
+        // UI & Accordion Setup
+        // -------------------------------------------------------------
+        function setupAccordion() {
+            const btn = document.getElementById('toggleConfigBtn');
+            const content = document.getElementById('configContent');
+            const icon = document.getElementById('accordionIcon');
 
-    toggleBtn.addEventListener('click', () => {
-        optionsContent.classList.toggle('collapsed');
-        if (optionsContent.classList.contains('collapsed')) {
-            toggleText.textContent = 'Mở rộng tùy chọn';
-            toggleIcon.className = 'fa-solid fa-chevron-down';
-        } else {
-            toggleText.textContent = 'Thu gọn tùy chọn';
-            toggleIcon.className = 'fa-solid fa-chevron-up';
+            btn.addEventListener('click', () => {
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
         }
-    });
 
-    /* ================= LOGIC TẠO TÊN AI TỰ NHIÊN ================= */
-    function generateRawName(length) {
-        let name = "";
-        const w1 = firstWords[Math.floor(Math.random() * firstWords.length)];
-        const w2 = secondWords[Math.floor(Math.random() * secondWords.length)];
-        
-        if (length === "2") {
-            name = `${w1} ${w2}`;
-        } else {
-            const w3 = thirdWords[Math.floor(Math.random() * thirdWords.length)];
-            name = `${w1} ${w2} ${w3}`;
+        function selectWordLength(len) {
+            selectedWordLength = len;
+            const btn2 = document.getElementById('opt2Words');
+            const btn3 = document.getElementById('opt3Words');
+
+            // Reset classes
+            [btn2, btn3].forEach(btn => {
+                btn.className = "word-len-btn flex items-center justify-between p-3 border rounded-lg text-xs font-semibold transition-all duration-150 bg-white border-slate-200 text-slate-700 hover:border-slate-300";
+                btn.querySelector('.check-icon').classList.add('hidden');
+            });
+
+            // Active Class applying red text & border + red check icon
+            const activeBtn = len === 2 ? btn2 : btn3;
+            activeBtn.className = "word-len-btn flex items-center justify-between p-3 border-2 rounded-lg text-xs font-bold transition-all duration-150 bg-red-50/50 border-red-500 text-red-600 shadow-sm";
+            activeBtn.querySelector('.check-icon').classList.remove('hidden');
         }
-        return name;
-    }
 
-    function removeVietnameseTones(str) {
-        return str.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-            .replace(/\s+/g, '')
-            .toLowerCase();
-    }
+        // -------------------------------------------------------------
+        // File Upload Processing (.TXT & .PDF)
+        // -------------------------------------------------------------
+        function setupFileUpload() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
 
-    /* ================= QUÉT VÀ KIỂM TRA THỰC TẾ (REAL APIS) ================= */
-    
-    // 1. Kiểm tra Tên miền qua cổng RDAP thực tế (Free Real API)
-    async function checkDomainReal(slug) {
-        try {
-            const response = await fetch(`https://rdap.verisign.com/com/v1/domain/${slug}.com`);
-            if (response.status === 200) {
-                return { registered: true, domain: `${slug}.com` };
-            } else if (response.status === 404) {
-                return { registered: false, domain: `${slug}.com` };
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-sky-500', 'bg-sky-50/50');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-sky-500', 'bg-sky-50/50');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-sky-500', 'bg-sky-50/50');
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+        }
+
+        async function handleFileSelect(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            showStatus(true, `Đang đọc tệp ${file.name}...`);
+
+            try {
+                if (ext === 'txt') {
+                    const text = await file.text();
+                    parseVerticalLines(text);
+                } else if (ext === 'pdf') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const text = await extractTextFromPDF(arrayBuffer);
+                    parseVerticalLines(text);
+                } else {
+                    showToast('Định dạng tệp không được hỗ trợ. Hãy dùng .TXT hoặc .PDF', 'alert-circle');
+                    showStatus(false);
+                    return;
+                }
+
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('lineCount').textContent = `${sourceWords.length} hàng hợp lệ`;
+                document.getElementById('fileInfo').classList.remove('hidden');
+                showToast(`Đã nạp thành công ${sourceWords.length} từ từ tệp!`);
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi khi đọc tệp. Vui lòng kiểm tra lại.', 'alert-circle');
+            } finally {
+                showStatus(false);
             }
-        } catch (e) {
-            // Trường hợp CORS hoặc lỗi mạng
         }
-        return { registered: false, domain: `${slug}.com` };
-    }
 
-    // 2. Kiểm tra Tìm kiếm thực tế & Công ty trùng tên qua DuckDuckGo / Wikipedia Search API
-    async function checkSearchAndCompanyReal(name) {
-        let isCompanyMatch = false;
-        let isSearchMatch = false;
-        let details = [];
+        function parseVerticalLines(rawText) {
+            // Read vertical line by line
+            const lines = rawText.split(/\r?\n/)
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
 
-        try {
-            const query = encodeURIComponent(`"Công ty ${name}"`);
-            const res = await fetch(`https://api.duckduckgo.com/?q=${query}&format=json&no_html=1`);
-            const data = await res.json();
+            sourceWords = lines;
+        }
 
-            if (data.AbstractText && data.AbstractText.length > 0) {
-                isCompanyMatch = true;
-                isSearchMatch = true;
-                details.push(`Xuất hiện trên công cụ tìm kiếm thực tế`);
+        async function extractTextFromPDF(arrayBuffer) {
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = "";
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const tokenProps = await page.getTextContent();
+                const pageText = tokenProps.items.map(item => item.str).join("\n");
+                fullText += pageText + "\n";
             }
-        } catch (e) {}
+            return fullText;
+        }
 
-        // Kiểm tra bổ sung trên Wikipedia Việt Nam để tìm thực thể nổi tiếng/doanh nghiệp
-        try {
-            const wikiRes = await fetch(`https://vi.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`);
-            const wikiData = await wikiRes.json();
-            
-            if (wikiData.query && wikiData.query.search.length > 0) {
-                const firstResult = wikiData.query.search[0].title;
-                if (firstResult.toLowerCase().includes(name.toLowerCase())) {
-                    isSearchMatch = true;
-                    details.push(`Trùng tên thương hiệu/thực thể trên Wikipedia`);
+        // -------------------------------------------------------------
+        // AI Name Generation Algorithm
+        // -------------------------------------------------------------
+        async function generateNames(count = 1) {
+            if (isAutoLooping && count === 1) return; // Prevent manual single click while auto loop is running
+
+            showStatus(true, "Đang xử lý & AI tạo tên...");
+
+            try {
+                let generatedResult = null;
+
+                // Priority 1: Use Gemini AI API if sourceWords available or general context
+                generatedResult = await fetchNameFromGeminiAI();
+
+                if (generatedResult) {
+                    // Check duplicate
+                    const cleanName = generatedResult.trim();
+                    const nameKey = cleanName.toLowerCase();
+
+                    if (generatedHistory.has(nameKey)) {
+                        console.log("Phát hiện tên trùng lặp, đang thử kết hợp ngẫu nhiên khác...");
+                        // Fallback local recombination if AI returned duplicated name
+                        const localAlt = generateLocalCombination();
+                        if (localAlt && !generatedHistory.has(localAlt.toLowerCase())) {
+                            addNameToHistory(localAlt);
+                        } else {
+                            showToast("AI vừa tạo ra tên đã có trong lịch sử, đã tự động bỏ qua.", "info");
+                        }
+                    } else {
+                        addNameToHistory(cleanName);
+                    }
+                } else {
+                    // Fallback to internal smart algorithm if AI response failed
+                    const localName = generateLocalCombination();
+                    if (localName) {
+                        if (!generatedHistory.has(localName.toLowerCase())) {
+                            addNameToHistory(localName);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Generating error:", err);
+                const localName = generateLocalCombination();
+                if (localName && !generatedHistory.has(localName.toLowerCase())) {
+                    addNameToHistory(localName);
+                }
+            } finally {
+                if (!isAutoLooping) {
+                    showStatus(false);
                 }
             }
-        } catch (e) {}
-
-        return { isCompanyMatch, isSearchMatch, details };
-    }
-
-    /* ================= THAO TÁC XỬ LÝ CHÍNH ================= */
-    const generateBtn = document.getElementById('generateBtn');
-    const loadingBox = document.getElementById('loadingBox');
-    const resultCard = document.getElementById('resultCard');
-    const resultsContainer = document.getElementById('resultsContainer');
-
-    generateBtn.addEventListener('click', async () => {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        const length = document.querySelector('input[name="length"]:checked').value;
-
-        // Bật Loading
-        loadingBox.style.display = 'block';
-        resultCard.style.display = 'none';
-        resultsContainer.innerHTML = '';
-
-        let validNameFound = false;
-        let generatedResult = null;
-        let attempts = 0;
-
-        // Vòng lặp tự động tạo và loại bỏ trùng lặp thực tế
-        while (!validNameFound && attempts < 10) {
-            attempts++;
-            const candidateName = generateRawName(length);
-            const slug = removeVietnameseTones(candidateName);
-
-            // Kiểm tra trùng Lịch sử cá nhân
-            if (nameHistory.includes(candidateName)) {
-                continue; 
-            }
-
-            let domainCheck = { registered: false, domain: `${slug}.com` };
-            let searchCheck = { isCompanyMatch: false, isSearchMatch: false, details: [] };
-
-            // Thực thi kiểm tra thật dựa trên Chế độ chọn
-            if (mode === 'normal') {
-                // Kiểm tra đầy đủ nhất
-                const [dRes, sRes] = await Promise.all([
-                    checkDomainReal(slug),
-                    checkSearchAndCompanyReal(candidateName)
-                ]);
-                domainCheck = dRes;
-                searchCheck = sRes;
-            } else if (mode === 'fast') {
-                // Kiểm tra tên miền thực tế
-                domainCheck = await checkDomainReal(slug);
-            } 
-            // 'super_fast' bỏ qua các bước chờ API phụ, tối ưu thời gian tối đa
-
-            // Nếu phát hiện trùng tên công ty/thương hiệu đã đăng ký trên dữ liệu thực -> Tự động bỏ qua tên này
-            if (searchCheck.isCompanyMatch) {
-                continue;
-            }
-
-            // Chấp nhận tên hợp lệ
-            validNameFound = true;
-            generatedResult = {
-                name: candidateName,
-                slug: slug,
-                domainCheck: domainCheck,
-                searchCheck: searchCheck
-            };
         }
 
-        loadingBox.style.display = 'none';
+        async function fetchNameFromGeminiAI() {
+            const wordCountReq = selectedWordLength;
+            let promptText = "";
 
-        if (generatedResult) {
-            // Lưu vào lịch sử
-            saveToHistory(generatedResult.name);
+            if (sourceWords.length > 0) {
+                // Shuffle sample words for prompt efficiency
+                const shuffled = [...sourceWords].sort(() => 0.5 - Math.random()).slice(0, 40);
+                promptText = `Dưới đây là danh sách các chữ/từ đơn:\n${shuffled.join("\n")}\n\n`;
+                promptText += `Hãy kết hợp từ danh sách trên để tạo thành 1 TÊN DUY NHẤT gồm chính xác ${wordCountReq} chữ. `;
+            } else {
+                promptText = `Hãy tạo 1 TÊN RIÊNG/TÊN THƯƠNG HIỆU/TÊN TỰ NHIÊN TIẾNG VIỆT HOẶC TIẾNG ANH gồm chính xác ${wordCountReq} chữ. `;
+            }
+
+            promptText += `Tên phải có nghĩa, tự nhiên, hợp lý. Chỉ trả về duy nhất tên đó, không ghi thêm bất kỳ chữ nào khác. Không dùng dấu câu.`;
+
+            // Backoff retry logic
+            const retries = 3;
+            for (let attempt = 0; attempt < retries; attempt++) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }]
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) {
+                        return text.replace(/[\r\n"'.]/g, '').trim();
+                    }
+                } catch (e) {
+                    if (attempt === retries - 1) throw e;
+                    await new Promise(res => setTimeout(res, Math.pow(2, attempt) * 1000));
+                }
+            }
+            return null;
+        }
+
+        function generateLocalCombination() {
+            // Smart local dictionary fallback if file not provided or offline
+            const defaultWordsList = sourceWords.length >= selectedWordLength 
+                ? sourceWords 
+                : ["Minh", "An", "Bình", "Đức", "Hoàng", "Phúc", "Khánh", "Linh", "Nam", "Sơn", "Tâm", "Vinh", "Việt", "Thiên", "Hải", "Quang", "Phương", "Nguyên", "Phát", "Thịnh"];
+
+            let resultWords = [];
+            for (let i = 0; i < selectedWordLength; i++) {
+                const randomWord = defaultWordsList[Math.floor(Math.random() * defaultWordsList.length)];
+                resultWords.push(randomWord);
+            }
             
-            // Hiển thị kết quả
-            renderResult(generatedResult);
-            resultCard.style.display = 'block';
-        } else {
-            alert('Không tìm thấy tên phù hợp sau nhiều lần thử. Vui lòng bấm thử lại!');
-        }
-    });
-
-    /* ================= HIỂN THỊ KẾT QUẢ & LỊCH SỬ ================= */
-    function renderResult(item) {
-        const div = document.createElement('div');
-        div.className = 'result-item';
-
-        const domainStatusHtml = item.domainCheck.registered 
-            ? `<span style="color: #dc2626;"><i class="fa-solid fa-circle-xmark"></i> Tên miền ${item.domainCheck.domain} ĐÃ được đăng ký</span>`
-            : `<span style="color: #16a34a;"><i class="fa-solid fa-circle-check"></i> Tên miền ${item.domainCheck.domain} CÒN TRỐNG (Có thể đăng ký)</span>`;
-
-        const searchStatusHtml = item.searchCheck.isSearchMatch 
-            ? `<span style="color: #ca8a04;"><i class="fa-solid fa-triangle-exclamation"></i> Có kết quả xuất hiện trên mạng (${item.searchCheck.details.join(', ')})</span>`
-            : `<span style="color: #16a34a;"><i class="fa-solid fa-shield-cat"></i> Chưa từng đăng ký công ty / Không trùng dữ liệu phổ biến</span>`;
-
-        div.innerHTML = `
-            <div class="result-header">
-                <span class="name-title">${item.name}</span>
-                <span class="status-badge badge-success"><i class="fa-solid fa-check"></i> Đạt chuẩn</span>
-            </div>
-            <div class="check-details">
-                <div><i class="fa-solid fa-globe"></i> Kiếm tra Tên miền: ${domainStatusHtml}</div>
-                <div><i class="fa-solid fa-building"></i> Kiếm tra Doanh nghiệp/Tìm kiếm: ${searchStatusHtml}</div>
-                <div><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử: <span style="color: #16a34a;">Đảm bảo KHÔNG trùng lịch sử sử dụng</span></div>
-            </div>
-            <div class="action-btns">
-                <button class="btn-action" onclick="copyToClipboard('${item.name}')">
-                    <i class="fa-solid fa-copy"></i> Sao chép tên
-                </button>
-            </div>
-        `;
-        resultsContainer.appendChild(div);
-    }
-
-    function saveToHistory(name) {
-        if (!nameHistory.includes(name)) {
-            nameHistory.unshift(name);
-            localStorage.setItem('generated_name_history', JSON.stringify(nameHistory));
-            renderHistory();
-        }
-    }
-
-    function renderHistory() {
-        const historyList = document.getElementById('historyList');
-        if (nameHistory.length === 0) {
-            historyList.innerHTML = `<li class="history-item" style="color: var(--text-muted);">Chưa có lịch sử tạo tên nào.</li>`;
-            return;
+            // Capitalize properly
+            return resultWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
         }
 
-        historyList.innerHTML = nameHistory.map(name => `
-            <li class="history-item">
-                <span>${name}</span>
-                <button class="btn-action" onclick="copyToClipboard('${name}')" style="padding: 4px 8px;">
-                    <i class="fa-solid fa-copy"></i>
-                </button>
-            </li>
-        `).join('');
-    }
+        // -------------------------------------------------------------
+        // History & Duplication State Management
+        // -------------------------------------------------------------
+        function addNameToHistory(nameStr) {
+            const wordCount = nameStr.trim().split(/\s+/).length;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ` ${now.toLocaleDateString('vi-VN')}`;
 
-    /* ================= SAO CHÉP BỘ NHỚ ĐỆM ================= */
-    window.copyToClipboard = function(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert(`Đã sao chép: "${text}"`);
-        });
-    };
+            const item = {
+                id: Date.now() + Math.random().toString(36).substr(2, 4),
+                name: nameStr,
+                wordCount: wordCount,
+                timestamp: timeStr
+            };
 
-    document.getElementById('copyAllBtn').addEventListener('click', () => {
-        const names = Array.from(document.querySelectorAll('.name-title')).map(el => el.textContent);
-        if (names.length > 0) {
-            navigator.clipboard.writeText(names.join('\n')).then(() => {
-                alert('Đã sao chép tất cả kết quả!');
-            });
+            generatedHistory.add(nameStr.toLowerCase());
+            historyList.unshift(item); // Latest first
+
+            renderHistoryTable();
         }
-    });
 
-    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-        if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử đã lưu?')) {
-            nameHistory = [];
-            localStorage.removeItem('generated_name_history');
-            renderHistory();
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            const totalBadge = document.getElementById('totalCountBadge');
+            
+            totalBadge.textContent = historyList.length;
+
+            if (historyList.length === 0) {
+                tbody.innerHTML = `
+                    <tr id="emptyRow">
+                        <td colspan="5" class="p-12 text-center text-slate-400">
+                            <i data-lucide="sparkles" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                            <p class="text-xs">Chưa có tên nào được tạo.</p>
+                            <p class="text-[11px] text-slate-400">Tải lên tệp hoặc bấm nút "Đặt tên ngẫu nhiên" để bắt đầu.</p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            tbody.innerHTML = historyList.map((item, index) => {
+                const stt = historyList.length - index;
+                return `
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="p-3 text-center text-slate-400 font-mono text-[11px]">${stt}</td>
+                        <td class="p-3 font-semibold text-slate-900 text-sm">${escapeHtml(item.name)}</td>
+                        <td class="p-3 text-center">
+                            <span class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                ${item.wordCount} chữ
+                            </span>
+                        </td>
+                        <td class="p-3 text-slate-500 text-[11px]">${item.timestamp}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="copyToClipboard('${escapeHtml(item.name)}')" title="Sao chép tên này" 
+                                    class="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded transition-colors">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            lucide.createIcons();
         }
-    });
 
-    // Khởi chạy ban đầu
-    renderHistory();
-</script>
+        function clearHistory() {
+            if (historyList.length === 0) return;
+            historyList = [];
+            generatedHistory.clear();
+            renderHistoryTable();
+            showToast('Đã xóa toàn bộ lịch sử!');
+        }
 
+        // -------------------------------------------------------------
+        // Auto Loop Control
+        // -------------------------------------------------------------
+        function startAutoLoop() {
+            if (isAutoLooping) return;
+
+            isAutoLooping = true;
+            document.getElementById('btnAutoStart').disabled = true;
+            document.getElementById('btnAutoStart').classList.add('opacity-50', 'cursor-not-allowed');
+            
+            const btnStop = document.getElementById('btnAutoStop');
+            btnStop.disabled = false;
+            btnStop.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            document.getElementById('btnGenerateOnce').disabled = true;
+
+            showStatus(true, "Auto Vô hạn đang chạy...");
+            showToast("Đã bật chế độ Auto lặp vô hạn!");
+
+            // Run instantly once then loop
+            generateNames();
+            autoLoopTimer = setInterval(() => {
+                if (isAutoLooping) {
+                    generateNames();
+                }
+            }, 3000); // 3s interval for steady API rate
+        }
+
+        function stopAutoLoop() {
+            if (!isAutoLooping) return;
+
+            isAutoLooping = false;
+            if (autoLoopTimer) clearInterval(autoLoopTimer);
+
+            document.getElementById('btnAutoStart').disabled = false;
+            document.getElementById('btnAutoStart').classList.remove('opacity-50', 'cursor-not-allowed');
+
+            const btnStop = document.getElementById('btnAutoStop');
+            btnStop.disabled = true;
+            btnStop.classList.add('opacity-50', 'cursor-not-allowed');
+
+            document.getElementById('btnGenerateOnce').disabled = false;
+
+            showStatus(false);
+            showToast("Đã dừng tự động lặp!");
+        }
+
+        // -------------------------------------------------------------
+        // Copy Functions
+        // -------------------------------------------------------------
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            showToast(`Đã sao chép: "${text}"`);
+        }
+
+        function copyAllResults() {
+            if (historyList.length === 0) {
+                showToast("Chưa có kết quả nào để sao chép!", "alert-circle");
+                return;
+            }
+
+            const allNames = historyList.map(item => item.name).join("\n");
+            copyToClipboard(allNames);
+            showToast(`Đã sao chép toàn bộ ${historyList.length} tên!`);
+        }
+
+        // -------------------------------------------------------------
+        // Export Functions (Excel, PDF, TXT)
+        // -------------------------------------------------------------
+        function exportData(type) {
+            if (historyList.length === 0) {
+                showToast("Danh sách lịch sử đang trống!", "alert-circle");
+                return;
+            }
+
+            const filename = `danh_sach_ten_${Date.now()}`;
+
+            if (type === 'excel') {
+                const excelData = historyList.map((item, index) => ({
+                    "STT": historyList.length - index,
+                    "Tên Được Tạo": item.name,
+                    "Số Từ": item.wordCount,
+                    "Thời Gian Tạo": item.timestamp
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachTen");
+                XLSX.writeFile(workbook, `${filename}.xlsx`);
+                showToast("Đã xuất tệp Trang tính Excel thành công!");
+            } 
+            else if (type === 'txt') {
+                let txtContent = "=== DANH SÁCH TÊN NGẪU NHIÊN ĐÃ TẠO ===\n\n";
+                historyList.forEach((item, index) => {
+                    txtContent += `${historyList.length - index}. ${item.name} (${item.wordCount} chữ) - [${item.timestamp}]\n`;
+                });
+
+                const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `${filename}.txt`;
+                link.click();
+                showToast("Đã xuất tệp TXT thành công!");
+            } 
+            else if (type === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFontSize(16);
+                doc.text("DANH SÁCH TÊN NGẪU NHIÊN TẠO BỞI AI", 14, 18);
+                doc.setFontSize(10);
+                doc.text(`Tổng số lượng: ${historyList.length} tên | Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}`, 14, 25);
+
+                const tableRows = historyList.map((item, index) => [
+                    historyList.length - index,
+                    item.name,
+                    `${item.wordCount} chữ`,
+                    item.timestamp
+                ]);
+
+                doc.autoTable({
+                    head: [['STT', 'Tên Được Tạo', 'Số Từ', 'Thời Gian Tạo']],
+                    body: tableRows,
+                    startY: 30,
+                    theme: 'grid',
+                    styles: { fontSize: 9 },
+                    headStyles: { fillColor: [2, 132, 199] }
+                });
+
+                doc.save(`${filename}.pdf`);
+                showToast("Đã xuất tệp PDF thành công!");
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Helpers & Feedback
+        // -------------------------------------------------------------
+        function showStatus(show, text = "") {
+            const statusBox = document.getElementById('statusBox');
+            const statusText = document.getElementById('statusText');
+            if (show) {
+                statusText.textContent = text;
+                statusBox.classList.remove('hidden');
+            } else {
+                statusBox.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, iconName = 'check-circle') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = message;
+            toastIcon.setAttribute('data-lucide', iconName);
+            lucide.createIcons();
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
